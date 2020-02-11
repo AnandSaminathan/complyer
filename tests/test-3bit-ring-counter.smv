@@ -1,0 +1,18 @@
+MODULE main
+
+VAR x : boolean;
+VAR y : boolean;
+VAR z : boolean;
+
+ASSIGN
+
+init(x) := true;
+init(y) := false;
+init(z) := false;
+
+next(x) := txz;
+next(y) := txx;
+next(z) := txy;
+
+SAFETYSPEC
+((txx && !txy && !txz) || (!txx && txy && !txz) || (!txx && !txy && txz))

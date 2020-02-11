@@ -17,7 +17,9 @@ include(ExternalAntlr4Cpp)
 
 include_directories(${ANTLR4_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/include/verification-algorithms)
+include_directories(${PROJECT_SOURCE_DIR}/include/verification-algorithms/)
+include_directories(${PROJECT_SOURCE_DIR}/src/)
+
 
 find_package(ANTLR REQUIRED)
 
@@ -43,8 +45,9 @@ add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp
                   )
 
 target_link_libraries(complyer antlr4_static)
+#target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libantlr4-runtime.so)
 target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libz3.so)
-target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libformula-tree.so)
+#target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libformula-tree.so)
 target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so)
 
 
