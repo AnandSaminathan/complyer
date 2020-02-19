@@ -101,9 +101,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
           }
         }
       } else {
-        if(curExpression == "true") clause = id;
-        else if(curExpression == "false") clause = lnot(id); 
-        else clause = leq(id, curExpression); 
+        clause = leq(id, curExpression); 
         curExpression = "";
       }
 
