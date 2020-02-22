@@ -61,12 +61,12 @@ class NuSMVListener : public NuSMVParserBaseListener {
     }
 
     virtual void enterSimpleExpression(NuSMVParser::SimpleExpressionContext *ctx) override {
-      isCase = false;
       curExpression = (ctx->formula())->getText();
     }
 
     virtual void enterCaseExpression(NuSMVParser::CaseExpressionContext *ctx) override {
       isCase = true;
+      antecedents.clear(); consequents.clear();
     }
     
     virtual void enterCaseSubExpression(NuSMVParser::CaseSubExpressionContext *ctx) override {
@@ -100,6 +100,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
             clause = land(clause, sub);
           }
         }
+        isCase = false;
       } else {
         clause = leq(id, curExpression); 
         curExpression = "";

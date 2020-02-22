@@ -16,10 +16,10 @@ init               : INIT OPEN_PARAN WS? id WS? CLOSE_PARAN WS? assign WS? expre
 next               : NEXT OPEN_PARAN WS? id WS? CLOSE_PARAN WS? assign WS? expression WS? SC WS?;
 safetySpecBlock    : SAFETYSPEC newline WS? simpleExpression;
 
-expression         : (simpleExpression | caseExpression);
+expression         : (caseExpression | simpleExpression);
 
 simpleExpression   : formula;
-caseExpression     : CASE newline (caseSubExpression | newline)+ ESAC;
+caseExpression     : CASE newline? ( WS? (caseSubExpression | newline) )+ newline? WS? ESAC;
 
 caseSubExpression  : WS? antecedent=simpleExpression WS? COLON WS? consequent=simpleExpression SC WS?;
 

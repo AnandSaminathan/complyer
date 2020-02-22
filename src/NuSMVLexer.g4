@@ -1,8 +1,8 @@
 lexer grammar NuSMVLexer;
 
 SAFETYSPEC  : 'SAFETYSPEC';
-CASE        : 'CASE';
-ESAC        : 'ESAC';
+CASE        : 'case';
+ESAC        : 'esac';
 TRUE        : 'true';
 FALSE       : 'false';
 MAIN        : 'main';

@@ -1,0 +1,22 @@
+MODULE main
+
+VAR water : integer;
+VAR cola : integer;
+
+ASSIGN
+
+init(water) := 3;
+init(cola) := 4;
+
+next(water) := case 
+                  (water > 0) : water - 1; 
+                  (water == 0) : 3; 
+              esac;
+
+next(cola) := case 
+                (cola > 0) : cola - 1; 
+                (cola == 0) : 4; 
+              esac;
+
+SAFETYSPEC
+(water >= 0 && cola >= 0)
