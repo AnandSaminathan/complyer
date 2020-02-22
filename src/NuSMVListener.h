@@ -46,7 +46,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
       std::string id = (ctx->id())->getText();
       assert(declaredSymbols.count(id));
 
-      id = "ty" + id;
+      id = "next_" + id;
 
       std::string clause = getClause(id);
 

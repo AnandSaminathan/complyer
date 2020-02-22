@@ -1,18 +1,18 @@
 MODULE main
 
-VAR x : boolean;
-VAR y : boolean;
-VAR z : boolean;
+VAR a : boolean;
+VAR b : boolean;
+VAR c : boolean;
 
 ASSIGN
 
-init(x) := true;
-init(y) := false;
-init(z) := false;
+init(a) := true;
+init(b) := false;
+init(c) := false;
 
-next(x) := txz;
-next(y) := txx;
-next(z) := txy;
+next(a) := c;
+next(b) := a;
+next(c) := b;
 
 SAFETYSPEC
-((txx && !txy && !txz) || (!txx && txy && !txz) || (!txx && !txy && txz))
+((a && !b && !c) || (!a && b && !c) || (!a && !b && c))
