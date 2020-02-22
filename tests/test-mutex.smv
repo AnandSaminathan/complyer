@@ -1,0 +1,23 @@
+MODULE main
+
+VAR p1 : integer;
+VAR p2 : integer;
+VAR p3 : integer;
+VAR p4 : integer;
+VAR p5 : integer;
+
+ASSIGN
+
+init(p1) := 1;
+init(p2) := 0;
+init(p3) := 1;
+init(p4) := 1;
+init(p5) := 0;
+
+next({p1, p2, p3}) := (p1 >= 1 && p3 >= 1) : {p1 - 1, p2 + 1, p3 - 1};
+next({p1, p2, p3}) := (p2 >= 1) : {p1 + 1, p2 - 1, p3 + 1};
+next({p3, p4, p5}) := (p3 >= 1 && p4 >= 1) : {p3 - 1, p4 - 1, p5 + 1};
+next({p3, p4, p5}) := (p5 >= 1) : {p3 + 1, p4 + 1, p5 - 1};
+
+SAFETYSPEC
+!(p2 > 0 && p5 > 0)
