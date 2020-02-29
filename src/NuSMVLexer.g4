@@ -1,5 +1,7 @@
 lexer grammar NuSMVLexer;
 
+BOUND       : 'BOUND';
+LTLSPEC     : 'LTLSPEC';
 SAFETYSPEC  : 'SAFETYSPEC';
 CASE        : 'case';
 ESAC        : 'esac';

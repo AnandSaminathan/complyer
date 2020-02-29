@@ -33,6 +33,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
     virtual void exitModule(NuSMVParser::ModuleContext *ctx) override {
       if(isCon) { prepareConcurrentT(); }
       spec.setI(parenthesize(I)); spec.setT(parenthesize(T)); spec.setP(P); 
+      if(isLtl) { spec.setLtl(); spec.setBound(bound); }
     }
 
     virtual void exitInit(NuSMVParser::InitContext *ctx) override { 
@@ -77,9 +78,18 @@ class NuSMVListener : public NuSMVParserBaseListener {
     }
 
     virtual void exitSafetySpecBlock(NuSMVParser::SafetySpecBlockContext *ctx) override { 
+      isLtl = false;
       P = curExpression; 
       curExpression = "";
     }
+
+    virtual void exitLtlSpecBlock(NuSMVParser::LtlSpecBlockContext *ctx) override {
+      isLtl = true;
+      P = curExpression;
+      bound = std::stoi((ctx->bound)->getText());
+      curExpression = "";
+    }
+
 
     virtual void enterSet(NuSMVParser::SetContext *ctx) override {
       insideSet = true;
@@ -135,6 +145,9 @@ class NuSMVListener : public NuSMVParserBaseListener {
     bool isSeq;
     bool isCon;
     bool insideSet;
+    bool isLtl;
+
+    int bound;
 
     std::string getClause(std::string id) {
       std::string clause = "";

@@ -7,6 +7,7 @@ options {
 module             : MODULE WS MAIN WS? newline (varDeclaration
                                                 | assignBlock
                                                 | safetySpecBlock
+                                                | ltlSpecBlock
                                                 | newline)+ EOF;
 
 
@@ -16,6 +17,7 @@ init               : INIT OPEN_PARAN WS? id WS? CLOSE_PARAN WS? assign WS? expre
 next               : NEXT OPEN_PARAN WS? id WS? CLOSE_PARAN WS? assign WS? expression WS? SC WS?;
 concurrentNext     : NEXT OPEN_PARAN WS? set WS? CLOSE_PARAN WS? assign WS? conExpression WS?;
 safetySpecBlock    : SAFETYSPEC newline WS? simpleExpression;
+ltlSpecBlock       : LTLSPEC newline WS? simpleExpression WS? newline BOUND WS? bound=wholeNumber;
 
 expression         : (caseExpression | simpleExpression);
 conExpression      : WS? antecedent=simpleExpression WS? COLON WS? consequent=set SC WS?;

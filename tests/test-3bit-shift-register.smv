@@ -1,0 +1,19 @@
+MODULE main
+
+VAR x0 : boolean;
+VAR x1 : boolean;
+VAR x2 : boolean;
+
+ASSIGN
+
+init(x0) := false;
+init(x1) := false;
+init(x2) := false;
+
+next(x0) := x1;
+next(x1) := x2;
+next(x2) := true;
+
+LTLSPEC
+G(x0 == false && x1 == false && x2 == false)
+BOUND 3

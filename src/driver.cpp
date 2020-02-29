@@ -1,9 +1,9 @@
 #include <iostream>
 #include <fstream>
-#include <streambuf>
 
 #include "NuSMVListener.h"
 #include "k-induction/k-induction.hpp"
+#include "ltl-bmc/ltl-bmc.hpp"
 #include "ModelSpecification.h"
 
 using namespace antlr4;
@@ -36,16 +36,31 @@ int main(int argc, char* argv[]) {
   std::cout << "I: " << spec.getI() << '\n';
   std::cout << "T: " << spec.getT() << '\n';
 
-  kInduction k(spec.getSymbols(), spec.getI(), spec.getT());
-  do {
-    std::cout << "Checking P: " << spec.getP() << '\n';
-    if(k.check(spec.getP())) { std::cout << "Model satisfies the given property" << '\n'; }
-    else { std::cout << "Model does not satisfy the given property" << '\n'; }
+  if(!spec.isLtl()) {
+    std::cout << "SAFETYSPEC\n"; 
+    kInduction k(spec.getSymbols(), spec.getI(), spec.getT());
+    do {
+      std::cout << "Checking P: " << spec.getP() << '\n';
+      if(k.check(spec.getP())) { std::cout << "Model satisfies the given property" << '\n'; }
+      else { std::cout << "Model does not satisfy the given property" << '\n'; }
 
-    std::cout << "Enter another property: ";
-    std::string P; std::getline(std::cin, P);
-    spec.setP(P);
-  } while(true);
+      std::cout << "Enter another property: ";
+      std::string P; std::getline(std::cin, P);
+      spec.setP(P);
+    } while(true);
+  } else {
+    std::cout << "LTLSPEC " << " bound: " << spec.getBound() << "\n";
+    ltlBmc l(spec.getSymbols(), spec.getI(), spec.getT()); l.setBound(spec.getBound());
+    do {
+      std::cout << "Checking P: " << spec.getP() << '\n';
+      if(l.check(spec.getP())) { std::cout << "Model satisfies the given property" << '\n'; }
+      else { std::cout << "Model does not satisfy the given property" << '\n'; }
+
+      std::cout << "Enter another property: ";
+      std::string P; std::getline(std::cin, P);
+      spec.setP(P);
+    } while(true);    
+  }
 
   return 0;
 }
