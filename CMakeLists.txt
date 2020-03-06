@@ -44,10 +44,8 @@ add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp
                     ${SOURCE}
                   )
 
-target_link_libraries(complyer antlr4_static)
-#target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libantlr4-runtime.so)
+target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libantlr4-runtime.so)
 target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libz3.so)
-#target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libformula-tree.so)
 target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so)
 
 
