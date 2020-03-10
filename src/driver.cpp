@@ -45,12 +45,11 @@ int main(int argc, char* argv[]) {
     property = "SAFETYSPEC " + spec.getP();
   }
 
-  std::cout << property << '\n';
   interpreter.interpret(property);
 
   while(true) {
     std::string input;
-    std::cout << "\n>> ";
+    std::cout << ">> ";
     getline(std::cin, input);
     interpreter.interpret(input);
   }

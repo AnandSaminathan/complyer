@@ -14,32 +14,31 @@ void Interpreter::interpret(std::string input) {
   else if(command == "BOUND") {
     int bound;
     if(stream >> bound) { ltlBmcVerifier.setBound(bound); } 
-    else { std::cout << "\nBound not specified\n"; }
-    std::cout << ltlBmcVerifier.getBound() << '\n';
+    else { std::cout << "Bound not specified\n"; }
   } else {
     std::string property = "";
     getline(stream, property);
     if(property == "") {
-      std::cout << "\nProperty not specified\n";
+      std::cout << "Property not specified\n";
       return ;
     }
-    std::cout << "Checking: " << property << '\n';
+
     if(command == "LTLSPEC") {
       bool result = ltlBmcVerifier.check(property);
-      if(result) { std::cout << "\nmodel satisfies given property\n"; }
-      else if(handleRejection()) { std::cout << "\n\n" << ltlBmcVerifier.getTrace() << "\n"; }
+      if(result) { std::cout << "model satisfies given property\n"; }
+      else if(handleRejection()) { std::cout << ltlBmcVerifier.getTrace() << "\n"; }
     } else if(command == "SAFETYSPEC") {
       bool result = kInductionVerifier.check(property);
-      if(result) { std::cout << "\nmodel satisfies given property\n"; }
-      else if(handleRejection()) { std::cout << "\n\n" << kInductionVerifier.getTrace() << "\n"; }
+      if(result) { std::cout << "model satisfies given property\n"; }
+      else if(handleRejection()) { std::cout << kInductionVerifier.getTrace() << "\n"; }
     } else {
-      std::cout << "\n\nCommand '" << command << "' not found\n\n"; 
+      std::cout << "\nCommand '" << command << "' not found\n"; 
     }
   }
 }
 
 bool Interpreter::handleRejection() {
-  std::cout << "\nmodel does not satisfy given property\n\n";
+  std::cout << "model does not satisfy given property\n";
   std::cout << "print trace? ( y / n ) ";
 
   std::string option;
