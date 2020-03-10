@@ -17,7 +17,6 @@ include(ExternalAntlr4Cpp)
 
 include_directories(${ANTLR4_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/include/verification-algorithms/)
 include_directories(${PROJECT_SOURCE_DIR}/src/)
 
 
@@ -36,6 +35,7 @@ include_directories(${ANTLR_GrammarParser_OUTPUT_DIR})
 
 file(GLOB SOURCE ${PROJECT_SOURCE_DIR}/src/*.cpp
                 ${PROJECT_SOURCE_DIR}/src/*.h
+		${PROJECT_SOURCE_DIR}/src/complyer/*.cpp
         )
 
 add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp

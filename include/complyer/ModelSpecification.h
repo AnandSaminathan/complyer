@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "common/symbol.hpp"
+#include "verification-algorithms/common/symbol.hpp"
 
 inline std::string land(std::string op1, std::string op2) { return (op1 + " && " + op2); }
 inline std::string lor(std::string op1, std::string op2) { return (op1 + " || " + op2);  }

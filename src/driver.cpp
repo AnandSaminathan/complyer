@@ -1,10 +1,8 @@
-#include <iostream>
 #include <fstream>
 
 #include "NuSMVListener.h"
-#include "k-induction/k-induction.hpp"
-#include "ltl-bmc/ltl-bmc.hpp"
-#include "ModelSpecification.h"
+#include "complyer/ModelSpecification.h"
+#include "complyer/Interpreter.hpp"
 
 using namespace antlr4;
 
@@ -36,30 +34,25 @@ int main(int argc, char* argv[]) {
   std::cout << "I: " << spec.getI() << '\n';
   std::cout << "T: " << spec.getT() << '\n';
 
-  if(!spec.isLtl()) {
-    std::cout << "SAFETYSPEC\n"; 
-    kInduction k(spec.getSymbols(), spec.getI(), spec.getT());
-    do {
-      std::cout << "Checking P: " << spec.getP() << '\n';
-      if(k.check(spec.getP())) { std::cout << "Model satisfies the given property" << '\n'; }
-      else { std::cout << "Model does not satisfy the given property" << '\n'; }
+  Interpreter interpreter(spec.getSymbols(), spec.getI(), spec.getT());
+  std::string property;
 
-      std::cout << "Enter another property: ";
-      std::string P; std::getline(std::cin, P);
-      spec.setP(P);
-    } while(true);
+  if(spec.isLtl()) {
+    std::string bound = "BOUND " + std::to_string(spec.getBound());
+    interpreter.interpret(bound);
+    property = "LTLSPEC " + spec.getP();
   } else {
-    std::cout << "LTLSPEC " << " bound: " << spec.getBound() << "\n";
-    ltlBmc l(spec.getSymbols(), spec.getI(), spec.getT()); l.setBound(spec.getBound());
-    do {
-      std::cout << "Checking P: " << spec.getP() << '\n';
-      if(l.check(spec.getP())) { std::cout << "Model satisfies the given property" << '\n'; }
-      else { std::cout << "Model does not satisfy the given property" << '\n'; }
+    property = "SAFETYSPEC " + spec.getP();
+  }
 
-      std::cout << "Enter another property: ";
-      std::string P; std::getline(std::cin, P);
-      spec.setP(P);
-    } while(true);    
+  std::cout << property << '\n';
+  interpreter.interpret(property);
+
+  while(true) {
+    std::string input;
+    std::cout << "\n>> ";
+    getline(std::cin, input);
+    interpreter.interpret(input);
   }
 
   return 0;
