@@ -15,7 +15,7 @@ void Interpreter::interpret(std::string input) {
     int bound;
     if(stream >> bound) { ltlBmcVerifier.setBound(bound); } 
     else { std::cout << "Bound not specified\n"; }
-  } else {
+  } else if(command == "LTLSPEC" || command == "SAFETYSPEC") {
     std::string property = "";
     getline(stream, property);
     if(property == "") {
@@ -31,9 +31,9 @@ void Interpreter::interpret(std::string input) {
       bool result = kInductionVerifier.check(property);
       if(result) { std::cout << "model satisfies given property\n"; }
       else if(handleRejection()) { std::cout << kInductionVerifier.getTrace() << "\n"; }
-    } else {
-      std::cout << "\nCommand '" << command << "' not found\n"; 
-    }
+    } 
+  } else {
+    std::cout << "\nCommand '" << command << "' not found\n"; 
   }
 }
 

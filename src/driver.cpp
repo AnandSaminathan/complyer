@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 
   while(true) {
     std::string input;
-    std::cout << ">> ";
+    std::cout << ">>> ";
     getline(std::cin, input);
     interpreter.interpret(input);
   }
