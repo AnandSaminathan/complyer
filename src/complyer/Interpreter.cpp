@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include "complyer/Interpreter.hpp"
+#include "Interpreter.hpp"
 
 void Interpreter::interpret(std::string input) {
 
@@ -11,6 +11,10 @@ void Interpreter::interpret(std::string input) {
   std::transform(command.begin(), command.end(), command.begin(), ::toupper);
 
   if(command == "QUIT") { quit(); } 
+  else if(command == "LENGTH") { 
+    if(safetyProp) { std::cout << kInductionVerifier.getLength() << '\n'; } 
+    else { std::cout << ltlBmcVerifier.getLength() << '\n'; }
+  }
   else if(command == "BOUND") {
     int bound;
     if(stream >> bound) { ltlBmcVerifier.setBound(bound); } 
@@ -24,16 +28,18 @@ void Interpreter::interpret(std::string input) {
     }
 
     if(command == "LTLSPEC") {
+      safetyProp = false;
       bool result = ltlBmcVerifier.check(property);
       if(result) { std::cout << "model satisfies given property\n"; }
       else if(handleRejection()) { std::cout << ltlBmcVerifier.getTrace() << "\n"; }
     } else if(command == "SAFETYSPEC") {
+      safetyProp = true;
       bool result = kInductionVerifier.check(property);
       if(result) { std::cout << "model satisfies given property\n"; }
       else if(handleRejection()) { std::cout << kInductionVerifier.getTrace() << "\n"; }
     } 
   } else {
-    std::cout << "\nCommand '" << command << "' not found\n"; 
+    std::cout << "\nCommand '" << input << "' not found\n\n"; 
   }
 }
 

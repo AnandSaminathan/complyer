@@ -17,6 +17,8 @@ class Interpreter {
     ltlBmc ltlBmcVerifier;
     kInduction kInductionVerifier;
 
+    bool safetyProp;
+
     void verifyLtlSpec(std::string);
     void verifySafetySpec(std::string);
     void setLtlBound(int);
