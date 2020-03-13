@@ -1,10 +1,16 @@
+-- three bit ring counter
+
 MODULE main
+
+-- 3 boolean variables, one for each bit
 
 VAR a : boolean;
 VAR b : boolean;
 VAR c : boolean;
 
 ASSIGN
+
+-- initial state is (1, 0, 0)
 
 init(a) := true;
 init(b) := false;
@@ -13,6 +19,8 @@ init(c) := false;
 next(a) := c;
 next(b) := a;
 next(c) := b;
+
+-- safety specification - oneHigh property
 
 SAFETYSPEC
 ((a && !b && !c) || (!a && b && !c) || (!a && !b && c))

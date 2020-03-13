@@ -4,20 +4,22 @@ options {
   tokenVocab = NuSMVLexer;
 }
 
-module             : MODULE WS MAIN WS? newline (varDeclaration
-                                                | assignBlock
-                                                | safetySpecBlock
-                                                | ltlSpecBlock
-                                                | newline)+ EOF;
+module             : (comment | newline)* MODULE WS MAIN WS? newline (varDeclaration
+                                                                      | assignBlock
+                                                                      | safetySpecBlock
+                                                                      | ltlSpecBlock
+                                                                      | comment
+                                                                      | newline)+ EOF;
 
 
-assignBlock        : ASSIGN newline (init | next | concurrentNext | newline)+;
+assignBlock        : ASSIGN newline (init | next | concurrentNext | comment | newline)+;
 varDeclaration     : VAR WS id WS? COLON WS? type WS? SC WS?;
 init               : INIT OPEN_PARAN WS? id WS? CLOSE_PARAN WS? assign WS? expression WS? SC WS?;
 next               : NEXT OPEN_PARAN WS? id WS? CLOSE_PARAN WS? assign WS? expression WS? SC WS?;
 concurrentNext     : NEXT OPEN_PARAN WS? set WS? CLOSE_PARAN WS? assign WS? conExpression WS?;
 safetySpecBlock    : SAFETYSPEC newline WS? simpleExpression;
 ltlSpecBlock       : LTLSPEC newline WS? simpleExpression WS? newline BOUND WS? bound=wholeNumber;
+comment            : doubleDash ~(NL)*?;
 
 expression         : (caseExpression | simpleExpression);
 conExpression      : WS? antecedent=simpleExpression WS? COLON WS? consequent=set SC WS?;
@@ -39,6 +41,7 @@ wholeNumber        : (DIGIT | DIGIT+);
 alpha              : (LOWER_CASE | UPPER_CASE);
 alphaNum           : (alpha | DIGIT);
 newline            : NL;
+doubleDash         : MINUS MINUS;
 operators          : (PLUS | MINUS | DIV | MUL 
                       | NOT | AND | OR | IMPLIES | EQUIVALENT 
                       | EQ | NEQ | GT | LT | GTE | LTE 

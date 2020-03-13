@@ -1,22 +1,32 @@
+-- vending machine
+
 MODULE main
+
+-- vending machine automaton with water and cola bottles
 
 VAR water : integer;
 VAR cola : integer;
 
 ASSIGN
 
-init(water) := 3;
-init(cola) := 4;
+init(water) := 3; -- three bottles of water
+init(cola) := 4; -- four bottles of cola
+
+-- take water and refill water when water becomes zero
 
 next(water) := case 
                   (water > 0) : water - 1; 
                   (water == 0) : 3; 
               esac;
 
+-- take cola and refill cola when cola becomes zero
+
 next(cola) := case 
                 (cola > 0) : cola - 1; 
                 (cola == 0) : 4; 
               esac;
+
+-- safety specification for non-negative water and cola bottles
 
 SAFETYSPEC
 (water >= 0 && cola >= 0)
