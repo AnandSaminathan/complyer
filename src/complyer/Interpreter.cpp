@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <chrono>
 #include "Interpreter.hpp"
 
 void Interpreter::interpret(std::string input) {
@@ -29,12 +30,20 @@ void Interpreter::interpret(std::string input) {
 
     if(command == "LTLSPEC") {
       safetyProp = false;
+      auto start = std::chrono::high_resolution_clock::now();
       bool result = ltlBmcVerifier.check(property);
+      auto stop = std::chrono::high_resolution_clock::now();
+      auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+      std::cout << "Time taken: " << duration.count() / 1e6 << " seconds\n";
       if(result) { std::cout << "model satisfies given property\n"; }
       else if(handleRejection()) { std::cout << ltlBmcVerifier.getTrace() << "\n"; }
     } else if(command == "SAFETYSPEC") {
       safetyProp = true;
+      auto start = std::chrono::high_resolution_clock::now();
       bool result = kInductionVerifier.check(property);
+      auto stop = std::chrono::high_resolution_clock::now();
+      auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+      std::cout << "Time taken: " << duration.count() / 1e6 << " seconds\n";
       if(result) { std::cout << "model satisfies given property\n"; }
       else if(handleRejection()) { std::cout << kInductionVerifier.getTrace() << "\n"; }
     } 
