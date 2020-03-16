@@ -16,6 +16,8 @@ class NuSMVListener : public NuSMVParserBaseListener {
       std::string typeString = (ctx->type())->getText();
       std::string name = (ctx->id())->getText();
 
+      assert(declaredSymbols.count(name) == 0);
+
       type symbolType;
       if(typeString == "boolean") symbolType = bool_const;
       if(typeString == "integer") symbolType = int_const;
