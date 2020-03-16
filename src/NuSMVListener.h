@@ -16,7 +16,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
       std::string typeString = (ctx->type())->getText();
       std::string name = (ctx->id())->getText();
 
-      assert(declaredSymbols.count(name) == 0);
+      assert(!spec.isPresent(name));
 
       type symbolType;
       if(typeString == "boolean") symbolType = bool_const;
@@ -24,12 +24,11 @@ class NuSMVListener : public NuSMVParserBaseListener {
 
       Symbol symbol(symbolType, name);
       spec.addSymbol(symbol);
-      declaredSymbols.insert(name);
     }
 
     virtual void enterModule(NuSMVParser::ModuleContext *ctx) override {
       I = T = P = curExpression = "";
-      isCase = isSeq = isCon = false;
+      isSeq = isCon = insideCon = false;
     }
 
     virtual void exitModule(NuSMVParser::ModuleContext *ctx) override {
@@ -40,7 +39,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
 
     virtual void exitInit(NuSMVParser::InitContext *ctx) override { 
       std::string id = (ctx->id())->getText();
-      assert(declaredSymbols.count(id));
+      assert(spec.isPresent(id));
 
       std::string clause = getClause(id);
 
@@ -55,7 +54,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
 
     virtual void exitNext(NuSMVParser::NextContext *ctx) override {
       std::string id = (ctx->id())->getText();
-      assert(declaredSymbols.count(id));
+      assert(spec.isPresent(id));
 
       id = "next_" + id;
 
@@ -67,12 +66,14 @@ class NuSMVListener : public NuSMVParserBaseListener {
     
     virtual void enterConcurrentNext(NuSMVParser::ConcurrentNextContext *ctx) override { 
       isCon = true;
+      insideCon = true;
       assert(!isSeq);
     }
 
     virtual void exitConcurrentNext(NuSMVParser::ConcurrentNextContext *ctx) override {
       transitions.emplace_back(getTransition());
       concurrentSet.clear();
+      insideCon = false;
     }
 
     virtual void enterConExpression(NuSMVParser::ConExpressionContext *ctx) override {
@@ -99,30 +100,32 @@ class NuSMVListener : public NuSMVParserBaseListener {
     }
     
     virtual void exitSet(NuSMVParser::SetContext *ctx) override {
-      if(concurrentSet.empty()) {
-        concurrentSet = curSet;
-      } else {
-        conConsequent = curSet;
-        assert(conConsequent.size() == concurrentSet.size());
+      if(insideCon) {
+        if(concurrentSet.empty()) { concurrentSet = curSet; } 
+        else { conConsequent = curSet; assert(conConsequent.size() == concurrentSet.size()); }
       }
       insideSet = false;
     }
 
     virtual void enterSimpleExpression(NuSMVParser::SimpleExpressionContext *ctx) override {
       curExpression = (ctx->formula())->getText();
-      if(insideSet) {
-        curSet.emplace_back(curExpression);
-      }
-    }
-
-    virtual void enterCaseExpression(NuSMVParser::CaseExpressionContext *ctx) override {
-      isCase = true;
+      if(insideSet) { curSet.emplace_back(curExpression); }
     }
     
     virtual void enterCaseSubExpression(NuSMVParser::CaseSubExpressionContext *ctx) override {
       antecedents.emplace_back(parenthesize((ctx->antecedent)->getText()));
       consequents.emplace_back(parenthesize((ctx->consequent)->getText()));
     }
+
+    virtual void enterInterval(NuSMVParser::IntervalContext *ctx) override {
+      intervalFrom = (ctx->from)->getText();
+      intervalTo = (ctx->to)->getText();;
+    }
+
+    virtual void enterSimpleExpr(NuSMVParser::SimpleExprContext *ctx) override { expressionType = 1; }
+    virtual void enterCaseExpr(NuSMVParser::CaseExprContext *ctx) override { expressionType = 2; }
+    virtual void enterIntervalExpr(NuSMVParser::IntervalExprContext *ctx) override { expressionType = 3; }
+    virtual void enterSetExpr(NuSMVParser::SetExprContext *ctx) override { expressionType = 4; }
 
     ModelSpecification getSpecification() { return spec; }
 
@@ -131,7 +134,6 @@ class NuSMVListener : public NuSMVParserBaseListener {
     std::string I, T;
     std::string P;
     std::string curExpression;
-    std::set<std::string> declaredSymbols;
     std::vector<std::string> antecedents;
     std::vector<std::string> consequents;
 
@@ -143,46 +145,52 @@ class NuSMVListener : public NuSMVParserBaseListener {
     
     ModelSpecification spec;
 
-    bool isCase;
     bool isSeq;
     bool isCon;
     bool insideSet;
     bool isLtl;
+    bool insideCon;
 
     int bound;
+    int expressionType;
+    std::string intervalFrom, intervalTo;
 
     std::string getClause(std::string id) {
       std::string clause = "";
 
-      if(isCase) {
+      if(expressionType == 1) { clause = leq(id, curExpression); curExpression = ""; }
+      if(expressionType == 4) { clause = land(parenthesize(lge(id, intervalFrom)), parenthesize(lle(id, intervalTo))); }
+      if(expressionType == 3) {
+        clause = parenthesize(leq(id, curSet[0]));
+        for(int i = 1; i < curSet.size(); ++i) { clause = lor(clause, parenthesize(leq(id, curSet[i]))); }
+      }
+      if(expressionType == 2) {
         for(int i = 0; i < antecedents.size(); ++i) {
           std::string sub = limplies(antecedents[i], parenthesize(leq(id, consequents[i])));
           sub = parenthesize(sub);
-          if(i == 0) clause = sub;
-          else {
-            clause = land(clause, sub);
-          }
+          if(i == 0) { clause = sub; }
+          else { clause = land(clause, sub); }
         }
-        isCase = false;
         antecedents.clear(); consequents.clear();
-      } else {
-        clause = leq(id, curExpression); 
-        curExpression = "";
-      }
+      } 
 
       return clause;
     }
 
     std::string getTransition() {
-      std::set<std::string> present;
-      std::set<std::string> notPresent;
+      std::vector<std::string> notPresent;
       std::string transition = conAntecedent;
-      
-      for(auto id: concurrentSet) { present.insert(id); }
+      auto declaredSymbols = spec.getSymbols();
 
-      assert(present.size() == concurrentSet.size());
-      std::set_difference(declaredSymbols.begin(), declaredSymbols.end(), 
-        present.begin(), present.end(), std::inserter(notPresent, notPresent.end()));
+      std::vector<std::string> declaredSymbolNames;
+      for(auto symbol: declaredSymbols) {
+        declaredSymbolNames.emplace_back(symbol.getName());
+      }
+
+      sort(declaredSymbolNames.begin(), declaredSymbolNames.end());
+      sort(concurrentSet.begin(), concurrentSet.end());
+      std::set_difference(declaredSymbolNames.begin(), declaredSymbolNames.end(), 
+        concurrentSet.begin(), concurrentSet.end(), std::inserter(notPresent, notPresent.end()));
 
       for(int i = 0; i < concurrentSet.size(); ++i) {
         std::string next_id = "next_" + concurrentSet[i];

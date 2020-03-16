@@ -21,7 +21,12 @@ safetySpecBlock    : SAFETYSPEC newline WS? simpleExpression;
 ltlSpecBlock       : LTLSPEC newline WS? simpleExpression WS? newline BOUND WS? bound=wholeNumber;
 comment            : doubleDash ~(NL)*?;
 
-expression         : (caseExpression | simpleExpression);
+expression         : caseExpression   #caseExpr
+                   | simpleExpression #simpleExpr
+                   | set              #setExpr
+                   | interval         #intervalExpr
+                   ;
+
 conExpression      : WS? antecedent=simpleExpression WS? COLON WS? consequent=set SC WS?;
 
 simpleExpression   : formula;
@@ -29,8 +34,8 @@ caseExpression     : CASE WS? newline? (caseSubExpression | newline)+ WS? ESAC;
 
 caseSubExpression  : WS? antecedent=simpleExpression WS? COLON WS? consequent=simpleExpression SC WS?;
 
-type               : (interval | BOOLEAN | INTEGER | set);
-interval           : wholeNumber DOT DOT wholeNumber;
+type               : BOOLEAN | INTEGER;
+interval           : from=wholeNumber DOT DOT to=wholeNumber;
 set                : OPEN_CURLY WS? simpleExpression (WS? COMMA WS? simpleExpression)* WS? CLOSE_CURLY;
 value              : (TRUE | FALSE | id | wholeNumber);
 

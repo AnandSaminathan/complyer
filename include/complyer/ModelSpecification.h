@@ -10,6 +10,8 @@ inline std::string limplies(std::string op1, std::string op2) { return (op1 + " 
 inline std::string parenthesize(std::string op1) { return "(" + op1 + ")";  }
 inline std::string leq(std::string op1, std::string op2) { return (op1 + " == " + op2); }
 inline std::string lnot(std::string op1) { return "!" + op1; }
+inline std::string lle(std::string op1, std::string op2) { return (op1 + "<=" + op2); }
+inline std::string lge(std::string op1, std::string op2) { return (op1 + ">=" + op2); }
 
 
 class ModelSpecification {
@@ -33,7 +35,24 @@ class ModelSpecification {
 
     inline bool isLtl() { return ltl; }
 
-    inline void addSymbol(Symbol s) { symbols.push_back(s); }
+    inline void addSymbol(Symbol s) { 
+        symbols.push_back(s);
+        symbolTable[s.getName()] = symbols.size() - 1;
+    }
+
+    inline type getTypeOfSymbol(std::string name) {
+        auto it = symbolTable.find(name);
+        assert(it != symbolTable.end());
+        return symbols[it->second].getType();
+    }
+
+    inline Symbol getSymbol(std::string name) {
+        auto it = symbolTable.find(name);
+        assert(it != symbolTable.end());
+        return symbols[it->second];
+    }
+
+    inline bool isPresent(std::string name) { return (symbolTable.find(name) != symbolTable.end()); }
 
   private:
 
@@ -43,5 +62,6 @@ class ModelSpecification {
     bool ltl;
     int bound;
     std::vector<Symbol> symbols;
+    std::map<std::string, int> symbolTable;
 };
 
