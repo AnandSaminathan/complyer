@@ -159,8 +159,8 @@ class NuSMVListener : public NuSMVParserBaseListener {
       std::string clause = "";
 
       if(expressionType == 1) { clause = leq(id, curExpression); curExpression = ""; }
-      if(expressionType == 4) { clause = land(parenthesize(lge(id, intervalFrom)), parenthesize(lle(id, intervalTo))); }
-      if(expressionType == 3) {
+      if(expressionType == 3) { clause = land(parenthesize(lge(id, intervalFrom)), parenthesize(lle(id, intervalTo))); }
+      if(expressionType == 4) {
         clause = parenthesize(leq(id, curSet[0]));
         for(int i = 1; i < curSet.size(); ++i) { clause = lor(clause, parenthesize(leq(id, curSet[i]))); }
       }
