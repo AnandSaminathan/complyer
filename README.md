@@ -9,6 +9,9 @@ Install [z3](https://github.com/Z3Prover/z3).
 ```
 sudo apt-get install uuid-dev
 sudo apt-get install antlr4
+git clone https://github.com/AnandSaminathan/complyer
+cd complyer
+export LD_LIBRARY_PATH=`pwd`/libs
 mkdir build
 cd build
 cmake ../
