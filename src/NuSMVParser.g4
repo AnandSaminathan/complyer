@@ -29,19 +29,21 @@ expression         : caseExpression   #caseExpr
 
 conExpression      : WS? antecedent=simpleExpression WS? COLON WS? consequent=set SC WS?;
 
-simpleExpression   : formula;
 caseExpression     : CASE WS? newline? (caseSubExpression | newline)+ WS? ESAC;
 
 caseSubExpression  : WS? antecedent=simpleExpression WS? COLON WS? consequent=simpleExpression SC WS?;
+
+simpleExpression   : formula;
 
 type               : BOOLEAN | INTEGER;
 interval           : from=wholeNumber DOT DOT to=wholeNumber;
 set                : OPEN_CURLY WS? simpleExpression (WS? COMMA WS? simpleExpression)* WS? CLOSE_CURLY;
 value              : (TRUE | FALSE | id | wholeNumber);
 
-formula            : (operators | OPEN_PARAN | CLOSE_PARAN | id | TRUE | FALSE | wholeNumber | WS)+;
+formula            : (operators | OPEN_PARAN | CLOSE_PARAN | id | nextId | TRUE | FALSE | wholeNumber | WS)+;
 assign             : COLON ASSGN;
-id                 : (alpha) alphaNum*;
+nextId             : NEXT UNDERSCORE id;
+id                 : (alpha | UNDERSCORE) (alphaNum | UNDERSCORE)*;
 wholeNumber        : (DIGIT | DIGIT+);
 alpha              : (LOWER_CASE | UPPER_CASE);
 alphaNum           : (alpha | DIGIT);

@@ -49,7 +49,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
 
     virtual void enterNext(NuSMVParser::NextContext *ctx) override {
       isSeq = true;
-      assert(!isCon);
+      // assert(!isCon);
     }
 
     virtual void exitNext(NuSMVParser::NextContext *ctx) override {
@@ -67,7 +67,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
     virtual void enterConcurrentNext(NuSMVParser::ConcurrentNextContext *ctx) override { 
       isCon = true;
       insideCon = true;
-      assert(!isSeq);
+      // assert(!isSeq);
     }
 
     virtual void exitConcurrentNext(NuSMVParser::ConcurrentNextContext *ctx) override {
@@ -206,16 +206,8 @@ class NuSMVListener : public NuSMVParserBaseListener {
     }
 
     void prepareConcurrentT() {
-      for(int i = 0; i < transitions.size(); ++i) {
-        std::string clause = transitions[i];
-        for(int j = 0; j < transitions.size(); ++j) {
-          if(j != i) {
-           clause = land(clause, lnot(transitions[j]));
-          }
-        }
-        clause = parenthesize(clause);
-        if(i == 0) T = clause;
-        else T = lor(T, clause);
-      }
+      std::string transition = atMostOne(transitions);
+      if(T == "") T = transition;
+      else T = land(T, parenthesize(transition));
     }
 };
