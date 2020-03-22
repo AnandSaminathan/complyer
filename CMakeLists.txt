@@ -56,6 +56,7 @@ add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp
 target_link_libraries(complyer antlr4_shared)
 target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libz3.so)
 target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so)
+target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libformula-tree.so)
 
 
 

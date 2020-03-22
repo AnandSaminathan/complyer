@@ -8,11 +8,17 @@ using namespace antlr4;
 
 int main(int argc, char* argv[]) {
   if(argc == 1) {
-    std::cout << "Usage: " << argv[0] << " <file-name>\n";
+    std::cout << "Usage: " << argv[0] << " [-int] <file-name>\n";
     return 0;
-  } 
+  }
 
-  std::ifstream stream; stream.open(argv[1]);
+  bool interactive = false;
+  std::string option(argv[1]);
+  if(option == "-int") {
+    interactive = true;
+  }
+
+  std::ifstream stream; stream.open(argv[argc - 1]);
         
   ANTLRInputStream input(stream);
   NuSMVLexer lexer(&input);
@@ -34,7 +40,7 @@ int main(int argc, char* argv[]) {
   std::cout << "I: " << spec.getI() << '\n';
   std::cout << "T: " << spec.getT() << '\n';
 
-  Interpreter interpreter(spec.getSymbols(), spec.getI(), spec.getT());
+  Interpreter interpreter(spec.getSymbols(), spec.getI(), spec.getT(), spec.getLabelMapper());
   std::string property;
 
   if(spec.isLtl()) {
@@ -47,7 +53,7 @@ int main(int argc, char* argv[]) {
 
   interpreter.interpret(property);
 
-  while(true) {
+  while(interactive) {
     std::string input;
     std::cout << ">>> ";
     getline(std::cin, input);

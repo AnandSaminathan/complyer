@@ -21,13 +21,13 @@ init(p4) := 1;
 init(p5) := 0;
 
 -- t1 - token acquisition by thread 1
-next({p1, p2, p3}) := (p1 >= 1 && p3 >= 1) : {p1 - 1, p2 + 1, p3 - 1};
+next({p1, p2, p3}) := (p1 >= 1 && p3 >= 1) [t1]: {p1 - 1, p2 + 1, p3 - 1};
 -- t2 - token return by thread 1
-next({p1, p2, p3}) := (p2 >= 1) : {p1 + 1, p2 - 1, p3 + 1};
+next({p1, p2, p3}) := (p2 >= 1) [t2]: {p1 + 1, p2 - 1, p3 + 1};
 -- t3 - token acquisition by thread 2
-next({p3, p4, p5}) := (p3 >= 1 && p4 >= 1) : {p3 - 1, p4 - 1, p5 + 1};
+next({p3, p4, p5}) := (p3 >= 1 && p4 >= 1) [t3]: {p3 - 1, p4 - 1, p5 + 1};
 -- t4 - token return by thread 2
-next({p3, p4, p5}) := (p5 >= 1) : {p3 + 1, p4 + 1, p5 - 1};
+next({p3, p4, p5}) := (p5 >= 1) [t4]: {p3 + 1, p4 + 1, p5 - 1};
 
 -- safety specification for mutex
 

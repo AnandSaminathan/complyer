@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include "Interpreter.hpp"
+#include "formula-tree/formula-tree.h"
 
 void Interpreter::interpret(std::string input) {
 
@@ -27,6 +28,10 @@ void Interpreter::interpret(std::string input) {
       std::cout << "Property not specified\n";
       return ;
     }
+
+    FormulaTree tree(property);
+    tree.substitute(this->labelMapper);
+    property = tree.getFormula();
 
     if(command == "LTLSPEC") {
       safetyProp = false;

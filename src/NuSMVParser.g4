@@ -27,7 +27,7 @@ expression         : caseExpression   #caseExpr
                    | interval         #intervalExpr
                    ;
 
-conExpression      : WS? antecedent=simpleExpression WS? COLON WS? consequent=set SC WS?;
+conExpression      : WS? antecedent=simpleExpression WS? label WS? COLON WS? consequent=set SC WS?;
 
 caseExpression     : CASE WS? newline? (caseSubExpression | newline)+ WS? ESAC;
 
@@ -35,6 +35,7 @@ caseSubExpression  : WS? antecedent=simpleExpression WS? COLON WS? consequent=si
 
 simpleExpression   : formula;
 
+label              : OPEN_SQ WS? name=id WS? CLOSE_SQ;
 type               : BOOLEAN | INTEGER;
 interval           : from=wholeNumber DOT DOT to=wholeNumber;
 set                : OPEN_CURLY WS? simpleExpression (WS? COMMA WS? simpleExpression)* WS? CLOSE_CURLY;

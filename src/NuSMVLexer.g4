@@ -52,3 +52,5 @@ CLOSE_CURLY : '}';
 OPEN_PARAN  : '(';
 CLOSE_PARAN : ')';
 UNDERSCORE  : '_';
+OPEN_SQ     : '[';
+CLOSE_SQ    : ']';

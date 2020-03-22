@@ -71,18 +71,19 @@ class NuSMVListener : public NuSMVParserBaseListener {
     }
 
     virtual void exitConcurrentNext(NuSMVParser::ConcurrentNextContext *ctx) override {
-      transitions.emplace_back(getTransition());
+      transitions.emplace_back(getTransition(label));
       concurrentSet.clear();
       insideCon = false;
     }
 
     virtual void enterConExpression(NuSMVParser::ConExpressionContext *ctx) override {
       conAntecedent = (ctx->antecedent)->getText();
+      label = ((ctx->label())->name)->getText();
     }
 
     virtual void exitSafetySpecBlock(NuSMVParser::SafetySpecBlockContext *ctx) override { 
       isLtl = false;
-      P = curExpression; 
+      P = curExpression;
       curExpression = "";
     }
 
@@ -134,6 +135,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
     std::string I, T;
     std::string P;
     std::string curExpression;
+    std::string label;
     std::vector<std::string> antecedents;
     std::vector<std::string> consequents;
 
@@ -177,8 +179,10 @@ class NuSMVListener : public NuSMVParserBaseListener {
       return clause;
     }
 
-    std::string getTransition() {
+    std::string getTransition(std::string label) {
+
       std::vector<std::string> notPresent;
+      spec.addLabel(label, conAntecedent);
       std::string transition = conAntecedent;
       auto declaredSymbols = spec.getSymbols();
 

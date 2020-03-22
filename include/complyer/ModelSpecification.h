@@ -45,6 +45,7 @@ class ModelSpecification {
     inline std::string getI() { return I;  }
     inline std::string getT() { return T;  }
     inline std::string getP() { return P;  }
+    inline std::map<std::string, std::string> getLabelMapper() { return labelMapper; }
     inline std::vector<Symbol> getSymbols() { return symbols;  }
     inline int getBound() { assert(ltl == true); return bound; }
 
@@ -67,6 +68,12 @@ class ModelSpecification {
         return symbols[it->second];
     }
 
+    inline void addLabel(std::string label, std::string formula) {
+        assert(labelMapper.find(label) == labelMapper.end());
+        assert(!isPresent(label));
+        labelMapper[label] = formula;
+    }
+
     inline bool isPresent(std::string name) { return (symbolTable.find(name) != symbolTable.end()); }
 
   private:
@@ -78,5 +85,6 @@ class ModelSpecification {
     int bound;
     std::vector<Symbol> symbols;
     std::map<std::string, int> symbolTable;
+    std::map<std::string, std::string> labelMapper;
 };
 
