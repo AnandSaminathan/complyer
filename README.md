@@ -23,5 +23,7 @@ make
 After building, the tool can be used using.
 
 ```
-./complyer <file-name>
+./complyer [-int] <file-name>
 ```
+
+Use [-int] option for interaction.
