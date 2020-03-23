@@ -191,19 +191,16 @@ class NuSMVListener : public NuSMVParserBaseListener {
         declaredSymbolNames.emplace_back(symbol.getName());
       }
 
-      auto temp = concurrentSet;
-
-      sort(declaredSymbolNames.begin(), declaredSymbolNames.end());
-      sort(concurrentSet.begin(), concurrentSet.end());
-      std::set_difference(declaredSymbolNames.begin(), declaredSymbolNames.end(), 
-        concurrentSet.begin(), concurrentSet.end(), std::inserter(notPresent, notPresent.end()));
-
-      concurrentSet = temp;
       for(int i = 0; i < concurrentSet.size(); ++i) {
         std::string next_id = "next_" + concurrentSet[i];
         transition = land(transition, parenthesize(leq(next_id, conConsequent[i])));
       }
 
+      sort(declaredSymbolNames.begin(), declaredSymbolNames.end());
+      sort(concurrentSet.begin(), concurrentSet.end());
+      std::set_difference(declaredSymbolNames.begin(), declaredSymbolNames.end(), 
+        concurrentSet.begin(), concurrentSet.end(), std::inserter(notPresent, notPresent.end()));
+      
       for(auto id: notPresent) {
         std::string next_id = "next_" + id;
         transition = land(transition, parenthesize(leq(next_id, id)));
