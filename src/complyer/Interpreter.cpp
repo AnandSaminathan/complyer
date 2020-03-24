@@ -49,7 +49,7 @@ void Interpreter::interpret(std::string input) {
       auto stop = std::chrono::high_resolution_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
       std::cout << "Time taken: " << duration.count() / 1e6 << " seconds\n";
-      if(result) { std::cout << "model satisfies given property\n"; }
+      if(result) { std::cout << "model satisfies given property\n"; ltlBmcVerifier.setBound(kInductionVerifier.getLength()); }
       else if(handleRejection()) { std::cout << kInductionVerifier.getTrace() << "\n"; }
     } 
   } else {
