@@ -7,12 +7,10 @@
 
 class FormulaNode {
   public:
-    FormulaNode(std::string content, std::vector<FormulaNode*> children) {
-      this->content = content;
-      this->childrenCount = children.size();
-      this->children = children;
-      this->val = false;
-    }
+    FormulaNode(std::string& content, std::vector<FormulaNode*>& children)
+    : content(content),
+      children(children),
+      childrenCount(children.size()) { }
 
     FormulaNode(const FormulaNode& other) {
       (*this) = other;
@@ -34,7 +32,7 @@ class FormulaNode {
     inline void toggleIsVar() { val = true; }
 
   private:
-    bool val;
+    bool val{false};
     int childrenCount;
     std::string content;
     std::string contentType;
