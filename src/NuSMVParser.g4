@@ -50,7 +50,7 @@ alpha              : (LOWER_CASE | UPPER_CASE);
 alphaNum           : (alpha | DIGIT);
 newline            : NL;
 doubleDash         : MINUS MINUS;
-operators          : (PLUS | MINUS | DIV | MUL 
+operators          : (PLUS | MINUS | DIV | MUL | MOD
                       | NOT | AND | OR | IMPLIES | EQUIVALENT 
                       | EQ | NEQ | GT | LT | GTE | LTE 
                       | NEXTOP | UNTIL | RELEASE | GLOBAL | FUTURE);
