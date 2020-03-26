@@ -1,0 +1,14 @@
+MODULE main
+
+VAR n : integer;
+
+ASSIGN
+
+init(n) := 1600;
+
+next(n) := 	case
+				((n % 2) == 0) : n/2;
+				((n % 2) != 0): (3*n) + 1;
+			esac;
+SAFETYSPEC
+(n > 0)
