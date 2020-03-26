@@ -1,0 +1,27 @@
+MODULE main
+
+VAR item1 : integer;
+VAR item2 : integer;
+VAR item3 : integer;
+
+ASSIGN
+
+init(item1) := 3;
+init(item2) := 4;
+init(item3) := 5;
+
+next(item1) := 	case
+					(item1 > 0) : item1-1;
+					(item1 == 0): 3;
+				esac
+next(item2) := 	case
+					(item2 > 0) : item2-1;
+					(item2 == 0): 4;
+				esac
+next(item3) := 	case
+					(item3 > 0) : item3-1;
+					(item3 == 0): 5;
+				esac
+
+SAFETYSPEC
+(item1 >= 0) && (item2 >= 0) && (item3 >= 0)
