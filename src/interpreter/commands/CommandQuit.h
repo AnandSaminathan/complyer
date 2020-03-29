@@ -1,9 +1,4 @@
-//
-// Created by User on 29-03-2020.
-//
-
-#ifndef SMV_COMMANDQUIT_H
-#define SMV_COMMANDQUIT_H
+#pragma once
 
 #include <StringConstants.h>
 #include <algorithm>
@@ -26,4 +21,4 @@ public:
         exit(0);
     }
 };
-#endif //SMV_COMMANDQUIT_H
+

@@ -1,15 +1,11 @@
-  //
-  // Created by User on 29-03-2020.
-  //
+#pragma once
 
-  #pragma once
-
-  #include <verification-algorithms/ltl-bmc/ltl-bmc.hpp>
+#include <verification-algorithms/ltl-bmc/ltl-bmc.hpp>
   #include <utility>
   #include <StringConstants.h>
   #include "CommandInterface.h"
 
-  class CommandBound : public CommandInterface {
+class CommandBound : public CommandInterface {
 
     ltlBmc *ltl_bmc_verifier;
     int bound;
@@ -35,4 +31,4 @@
       ltl_bmc_verifier->setBound(bound);
       return std::string();
     }
-  };
+};

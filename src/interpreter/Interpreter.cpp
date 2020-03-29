@@ -1,7 +1,3 @@
-//
-// Created by User on 29-03-2020.
-//
-
 #include "Interpreter.h"
 
 void Interpreter::interpret(const std::string& input) {
