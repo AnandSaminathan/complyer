@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "verification-algorithms/common/verifier.hpp"
-#include "verification-algorithms/common/z3-solver.hpp"
 #include "verification-algorithms/common/symbol.hpp"
 #include "formula-tree/formula-tree.h"
 
@@ -24,7 +23,7 @@ class ltlBmc : public Verifier {
         this->bound = 1000000;
     }
 
-    virtual bool check(std::string) override;
+    bool check(std::string) override;
 
     inline z3::expr getI() { return I; }
     inline z3::expr getT() { return T; }

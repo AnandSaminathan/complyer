@@ -1,6 +1,6 @@
 #include <fstream>
 
-#include "listener/NuSMVListener.h"
+#include "NuSMVListener.h"
 #include "complyer/ModelSpecification.h"
 #include "interpreter/Interpreter.h"
 

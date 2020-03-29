@@ -5,21 +5,21 @@
 #ifndef SMV_COMMANDQUIT_H
 #define SMV_COMMANDQUIT_H
 
-#include <stringConstants.h>
+#include <StringConstants.h>
 #include <algorithm>
 #include <sstream>
-#include "commandInterface.h"
+#include "CommandInterface.h"
 
-class commandQuit : public commandInterface {
+class CommandQuit : public CommandInterface {
 public:
-    commandQuit() : commandInterface(stringConstants::QUIT) {}
+    CommandQuit() : CommandInterface(StringConstants::QUIT) {}
 
     bool parse(std::string line) override {
         std::stringstream ss(line);
         std::string command;
         ss >> command;
         std::transform(command.begin(),command.end(),command.begin(),::toupper);
-        return (command == stringConstants::QUIT);
+        return (command == StringConstants::QUIT);
     }
 
     std::string perform() override {
