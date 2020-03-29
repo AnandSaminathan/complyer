@@ -8,12 +8,12 @@
 #include <verification-algorithms/ltl-bmc/ltl-bmc.hpp>
 #include <verification-algorithms/k-induction/k-induction.hpp>
 #include <utility>
-#include "CommandLtlspec.h"
-#include "CommandSafetyspec.h"
-#include "CommandBound.h"
-#include "CommandTrace.h"
-#include "CommandLength.h"
-#include "CommandQuit.h"
+#include "interpreter/commands/CommandLtlspec.h"
+#include "interpreter/commands/CommandSafetyspec.h"
+#include "interpreter/commands/CommandBound.h"
+#include "interpreter/commands/CommandTrace.h"
+#include "interpreter/commands/CommandLength.h"
+#include "interpreter/commands/CommandQuit.h"
 
 class Interpreter {
 
