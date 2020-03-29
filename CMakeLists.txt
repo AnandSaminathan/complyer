@@ -32,8 +32,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src/)
 find_package(ANTLR REQUIRED)
 
 
-antlr_target(GrammarLexer ${PROJECT_SOURCE_DIR}/src/NuSMVLexer.g4 LEXER)
-antlr_target(GrammarParser ${PROJECT_SOURCE_DIR}/src/NuSMVParser.g4
+antlr_target(GrammarLexer ${PROJECT_SOURCE_DIR}/src/listener/NuSMVLexer.g4 LEXER)
+antlr_target(GrammarParser ${PROJECT_SOURCE_DIR}/src/listener/NuSMVParser.g4
              PARSER
              LISTENER
              DEPENDS_ANTLR GrammarLexer
@@ -44,7 +44,11 @@ include_directories(${ANTLR_GrammarParser_OUTPUT_DIR})
 
 file(GLOB SOURCE ${PROJECT_SOURCE_DIR}/src/*.cpp
                 ${PROJECT_SOURCE_DIR}/src/*.h
-		${PROJECT_SOURCE_DIR}/src/complyer/*.cpp
+#		${PROJECT_SOURCE_DIR}/src/complyer/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/listener/*.h
+        ${PROJECT_SOURCE_DIR}/src/listener/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/interpreter/*.h
+        ${PROJECT_SOURCE_DIR}/src/interpreter/*.cpp
         )
 
 add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp

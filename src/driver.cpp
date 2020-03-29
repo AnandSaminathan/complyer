@@ -1,8 +1,8 @@
 #include <fstream>
 
-#include "NuSMVListener.h"
+#include "listener/NuSMVListener.h"
 #include "complyer/ModelSpecification.h"
-#include "complyer/Interpreter.hpp"
+#include "interpreter/Interpreter.h"
 
 using namespace antlr4;
 

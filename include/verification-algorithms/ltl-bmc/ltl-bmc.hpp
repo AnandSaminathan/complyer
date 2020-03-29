@@ -7,7 +7,7 @@
 #include "verification-algorithms/common/symbol.hpp"
 #include "formula-tree/formula-tree.h"
 
-class ltlBmc : Verifier {
+class ltlBmc : public Verifier {
   public:
 
     ltlBmc(std::vector<Symbol> symbols, std::string I, std::string T) : I(ctx),
@@ -29,8 +29,8 @@ class ltlBmc : Verifier {
     inline z3::expr getI() { return I; }
     inline z3::expr getT() { return T; }
 
-    inline int  getLength() { return stoppedAt; }
-    inline z3::model getTrace() { assert(result == false); return trace; }
+    inline int  getLength() override { return stoppedAt; }
+    inline z3::model getTrace() override { assert(result == false); return trace; }
 
     inline void setBound(int bound) { this->bound = bound;  }
     inline int getBound() { return bound; }
