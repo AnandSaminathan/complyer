@@ -6,21 +6,42 @@
 
 using namespace antlr4;
 
-int main(int argc, char* argv[]) {
-  if(argc == 1) {
-    std::cout << "Usage: " << argv[0] << " [-int] <file-name>\n";
-    return 0;
+struct InputOptions {
+  bool interactive;
+  bool verbose;
+  bool input_program_set;
+  std::ifstream input_program_stream;
+  InputOptions(){
+      interactive = false;
+      verbose = false;
+      input_program_set = false;
   }
+};
 
-  bool interactive = false;
-  std::string option(argv[1]);
-  if(option == "-int") {
-    interactive = true;
+InputOptions processInput(int argc,char* argv[]){
+  int it = 1;
+  InputOptions inputOptions;
+  while(it < argc){
+    std::string cur(argv[it]);
+    if(cur == "-i" || cur == "--int"){
+      inputOptions.interactive = true;
+      it++;
+    } else if(cur == "-v" || cur == "--verbose"){
+      inputOptions.verbose = true;
+      it++;
+    } else {
+      inputOptions.input_program_set = true;
+      inputOptions.input_program_stream.open(cur.c_str());
+      it++;
+    }
   }
-
-  std::ifstream stream; stream.open(argv[argc - 1]);
-        
-  ANTLRInputStream input(stream);
+  if(!inputOptions.input_program_set){
+    throw std::invalid_argument("Program file not specified");
+  }
+  return inputOptions;
+}
+ModelSpecification constructModel(InputOptions &inputOptions) {
+  ANTLRInputStream input(inputOptions.input_program_stream);
   NuSMVLexer lexer(&input);
   CommonTokenStream tokens(&lexer);
   NuSMVParser parser(&tokens);
@@ -29,36 +50,50 @@ int main(int argc, char* argv[]) {
   NuSMVListener listener;
   tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
 
-  ModelSpecification spec = listener.getSpecification();
-
-  auto x = spec.getSymbols();
-  std::cout << "Variables: \n";
-  for(auto y: x) {
-    std::cout << y.getName() << ' ';
+  return listener.getSpecification();
+}
+void printModelSpecification(InputOptions &inputOptions,ModelSpecification &spec){
+  if(inputOptions.verbose) {
+    std::vector<Symbol> symbol_set = spec.getSymbols();
+    std::cout << "Variables: \n";
+    for(Symbol s:symbol_set) {
+      std::cout << s.getName() << ' ';
+    }
+    std::cout << '\n';
+    std::cout << "I: " << spec.getI() << '\n';
+    std::cout << "T: " << spec.getT() << '\n';
   }
-  std::cout << '\n';
-  std::cout << "I: " << spec.getI() << '\n';
-  std::cout << "T: " << spec.getT() << '\n';
-
-  Interpreter interpreter(spec.getSymbols(), spec.getI(), spec.getT(), spec.getLabelMapper());
+}
+void verifyPropertyInProgram(ModelSpecification &spec, Interpreter &interpreter){
   std::string property;
-
-  if(spec.isLtl()) {
-    std::string bound = "BOUND " + std::to_string(spec.getBound());
-    interpreter.interpret(bound);
-    property = "LTLSPEC " + spec.getP();
+  if(spec.isLtl()){
+    property = StringConstants::BOUND + " " + std::to_string(spec.getBound());
+    interpreter.interpret(property);
+    property = StringConstants::LTLSPEC + " " + spec.getP();
+    interpreter.interpret(property);
   } else {
-    property = "SAFETYSPEC " + spec.getP();
+    property = StringConstants::SAFETYSPEC + " " + spec.getP();
+    interpreter.interpret(property);
   }
-
-  interpreter.interpret(property);
-
-  while(interactive) {
+}
+void runInteractive(InputOptions &inputOptions, Interpreter &interpreter){
+  while(inputOptions.interactive){
     std::string input;
     std::cout << ">>> ";
-    getline(std::cin, input);
+    getline(std::cin,input);
     interpreter.interpret(input);
   }
+}
+int main(int argc, char* argv[]) {
+  InputOptions inputOptions = processInput(argc,argv);
+  ModelSpecification modelSpecification = constructModel(inputOptions);
+  printModelSpecification(inputOptions, modelSpecification);
+
+  Interpreter interpreter(modelSpecification.getSymbols(), modelSpecification.getI(),
+          modelSpecification.getT(), modelSpecification.getLabelMapper());
+  verifyPropertyInProgram(modelSpecification,interpreter);
+
+  runInteractive(inputOptions, interpreter);
 
   return 0;
 }
