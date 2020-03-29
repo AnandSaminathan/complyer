@@ -4,7 +4,7 @@ options {
   tokenVocab = NuSMVLexer;
 }
 
-program            : (newline | module)* module ( safetySpec
+nusmv              : (newline | module)* module ( safetySpec
                                                 | ltlSpec
                                                 | newline
                                                 )* EOF; 
