@@ -1,5 +1,6 @@
 lexer grammar NuSMVLexer;
 
+COMMENT     : '--' ~('\n')*? -> skip;
 BOUND       : 'BOUND';
 LTLSPEC     : 'LTLSPEC';
 SAFETYSPEC  : 'SAFETYSPEC';

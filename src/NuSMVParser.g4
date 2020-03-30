@@ -9,7 +9,7 @@ nusmv              : (newline | module)* module ( safetySpec
                                                 | newline
                                                 )* EOF; 
 
-module             : MODULE WS name=id WS? prameters? WS? newline ( declaration
+module             : MODULE WS name=id WS? parameters? WS? newline ( declaration
                                                                   | assignment
                                                                   | init
                                                                   | trans
@@ -38,24 +38,24 @@ initAssignment     : WS? INITF OPEN_P WS? id WS? CLOSE_P WS? assign WS? seqExpre
 seqNextAssignment  : WS? NEXT OPEN_P WS? id WS? CLOSE_P WS? assign WS? seqExpression WS? SC WS?;
 conNextAssignment  : WS? NEXT OPEN_P WS? set WS? CLOSE_P WS? assign WS? conExpression WS? SC WS?;
 
+// sequential expression
+
 seqExpression      : seqSimpleExpr
                    | seqCaseExpr
                    | seqIntervalExpr
                    | seqSetExpr
                    ;
 
-conExpression      : conSimpleExpr
-                   | conCaseExpr
-                   | conIntervalExpr
-                   | conSetExpr
-                   ;
-
 seqSimpleExpr      : formula;
 seqCaseExpr        : WS? CASE WS? newline (seqCaseSubExpr | newline)+ WS? ESAC SC WS?;
 seqIntervalExpr    : from=wholeNumber DOT DOT to=wholeNumber;
-seqSetExpr         : OPEN_C WS? formula (WS? COMMAD WS? formula)* WS? CLOSE_C WS?;
+seqSetExpr         : OPEN_C WS? seqSetSubExpr (WS? COMMA WS? seqSetSubExpr)* WS? CLOSE_C WS?;
+seqCaseSubExpr     : formula WS? COLON WS? seqExpression;
+seqSetSubExpr      : (seqSimpleExpr | seqIntervalExpr);
 
-conSimpleExpr      : formula WS? COLON WS? seqSetExpr;
+// concurrent expression
+
+conExpression      : formula WS? label WS? COLON WS? seqSetExpr;
 
 definition         : WS? id WS? assign WS? formula WS? SC;
 
@@ -64,7 +64,6 @@ type               : BOOLEAN | INTEGER;
 set                : OPEN_C WS? id (WS? COMMA WS? id)* WS? CLOSE_C;
 value              : (TRUE | FALSE | id | wholeNumber);
 
-comment            : doubleDash ~(NL)*? -> skip;
 formula            : (operators | OPEN_P | CLOSE_P | id | nextId | TRUE | FALSE | wholeNumber | WS)+;
 assign             : COLON ASSGN;
 nextId             : NEXT UNDERSCORE id;
@@ -73,9 +72,7 @@ wholeNumber        : (DIGIT | DIGIT+);
 alpha              : (LOWER_CASE | UPPER_CASE);
 alphaNum           : (alpha | DIGIT);
 newline            : NL;
-doubleDash         : MINUS MINUS;
-operators          : (PLUS | MINUS | DIV | MUL | MOD
-                      | NOT | AND | OR | IMPLIES | EQUIVALENT 
-                      | EQ | NEQ | GT | LT | GTE | LTE 
+operators          : (PLUS | MINUS | DIV | MUL | MOD | NOT | AND | OR | IMPLIES | EQUIVALENT | EQ 
+                      | NEQ | GT | LT | GTE | LTE 
                       | NEXTOP | UNTIL | RELEASE | GLOBAL | FUTURE);
 
