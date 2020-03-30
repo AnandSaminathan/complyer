@@ -1,6 +1,6 @@
 lexer grammar NuSMVLexer;
 
-COMMENT     : '--' ~('\n')*? -> skip;
+COMMENT     : '--' ~('\n')* -> skip;
 BOUND       : 'BOUND';
 LTLSPEC     : 'LTLSPEC';
 SAFETYSPEC  : 'SAFETYSPEC';
@@ -8,7 +8,6 @@ CASE        : 'case';
 ESAC        : 'esac';
 TRUE        : 'true';
 FALSE       : 'false';
-MAIN        : 'main';
 INITF       : 'init';
 NEXT        : 'next';
 BOOLEAN     : 'boolean';

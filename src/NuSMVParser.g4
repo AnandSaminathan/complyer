@@ -10,18 +10,18 @@ nusmv              : (newline | module)* module ( safetySpec
                                                 )* EOF; 
 
 module             : MODULE WS name=id WS? parameters? WS? newline ( declaration
-                                                                  | assignment
-                                                                  | init
-                                                                  | trans
-                                                                  | define
-                                                                  | newline
-                                                                  )+;
+                                                                   | assignment
+                                                                   | init
+                                                                   | trans
+                                                                   | define
+                                                                   | newline
+                                                                   )+;
 
 safetySpec         : SAFETYSPEC newline WS? formula WS? (newline bound)?;
 ltlSpec            : LTLSPEC newline WS? formula WS? newline bound;
 
 parameters         : WS? OPEN_P id (COMMA WS? id)* CLOSE_P;
-declaration        : VAR WS id COLON type WS? SC;
+declaration        : VAR WS id  WS? COLON WS? type WS? SC;
 assignment         : ASSIGN WS? newline ( initAssignment
                                         | seqNextAssignment
                                         | conNextAssignment
@@ -68,7 +68,7 @@ formula            : (operators | OPEN_P | CLOSE_P | id | nextId | TRUE | FALSE 
 assign             : COLON ASSGN;
 nextId             : NEXT UNDERSCORE id;
 id                 : (alpha | UNDERSCORE) (alphaNum | UNDERSCORE)*;
-wholeNumber        : (DIGIT | DIGIT+);
+wholeNumber        : (DIGIT)+;
 alpha              : (LOWER_CASE | UPPER_CASE);
 alphaNum           : (alpha | DIGIT);
 newline            : NL;

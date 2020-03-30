@@ -21,4 +21,4 @@ next({p3, p4, p5}) := (p5 >= 1) [t4]: {p3 + 1, p4 + 1, p5 - 1};
 
 LTLSPEC
 F(t1)
-BOUND 3
+BOUND 3;
