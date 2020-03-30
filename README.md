@@ -1,19 +1,19 @@
 # complyer
 
-A tool which verifies if a model satisfies a desired property.
+A compiler which verifies if a model, given in the form of a program, satisfies some desired property given as input.
 
-## Build instructions
+## Prerequisites
+- Z3 : [Installation](https://github.com/Z3Prover/z3)
+- CMake : ```sudo apt-get install cmake```
+- Package Config : ```sudo apt-get install pkg-config```
+- UUID : ```sudo apt-get install uuid-dev```
+- ANTLR4 : ```sudo apt-get install antlr4```
 
-Install [z3](https://github.com/Z3Prover/z3).
-
+## Build Instructions
+Navigate to root directory of the repository
 ```
-sudo apt-get install uuid-dev
-sudo apt-get install antlr4
-git clone https://github.com/AnandSaminathan/complyer
-cd complyer
 export LD_LIBRARY_PATH=`pwd`/libs
-mkdir build
-cd build
+mkdir build; cd build
 cmake ../
 make
 ```
@@ -23,7 +23,8 @@ make
 After building, the tool can be used using.
 
 ```
-./complyer [-int] <file-name>
+./complyer [OPTIONS] <file-name>
 ```
-
-Use [-int] option for interaction.
+#### Options
+- ```-i, --interactive``` : Enable Interaction
+- ```-v, --verbose``` : Descriptive Logs

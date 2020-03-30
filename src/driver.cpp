@@ -23,7 +23,7 @@ InputOptions processInput(int argc,char* argv[]){
   InputOptions inputOptions;
   while(it < argc){
     std::string cur(argv[it]);
-    if(cur == "-i" || cur == "--int"){
+    if(cur == "-i" || cur == "--interactive"){
       inputOptions.interactive = true;
       it++;
     } else if(cur == "-v" || cur == "--verbose"){
