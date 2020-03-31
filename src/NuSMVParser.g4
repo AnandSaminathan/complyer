@@ -49,9 +49,8 @@ seqExpression      : seqSimpleExpr
 seqSimpleExpr      : formula;
 seqCaseExpr        : WS? CASE WS? newline (seqCaseSubExpr | newline)+ WS? ESAC SC WS?;
 seqIntervalExpr    : from=wholeNumber DOT DOT to=wholeNumber;
-seqSetExpr         : OPEN_C WS? seqSetSubExpr (WS? COMMA WS? seqSetSubExpr)* WS? CLOSE_C WS?;
+seqSetExpr         : OPEN_C WS? seqExpression (WS? COMMA WS? seqExpression)* WS? CLOSE_C WS?;
 seqCaseSubExpr     : formula WS? COLON WS? seqExpression;
-seqSetSubExpr      : (seqSimpleExpr | seqIntervalExpr);
 
 // concurrent expression
 

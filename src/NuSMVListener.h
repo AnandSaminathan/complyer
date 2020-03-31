@@ -5,7 +5,7 @@
 #include "NuSMVLexer.h"
 #include "NuSMVParser.h"
 #include "NuSMVParserBaseListener.h"
-#include "complyer/ModelSpecification.h"
+#include "complyer/nusmv/NuSMV.hpp"
 
 #include "antlr4-runtime.h"
 
