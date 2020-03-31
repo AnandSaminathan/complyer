@@ -8,10 +8,11 @@ class SeqExpression {
 
 };
 
-class SeqSimpleExpr : SeqExpression {
+class SeqSimpleExpr : public SeqExpression {
   public:
 
     SeqSimpleExpr() { }
+    SeqSimpleExpr(std::string formula) : formula(formula) { }
 
     inline void setFormula(std::string formula) { (this->formula) = formula; }
     inline std::string getFormula() { return formula; }
@@ -25,6 +26,8 @@ class SeqCaseSubExpr {
   public:
 
     SeqCaseSubExpr() { }
+    SeqCaseSubExpr(std::string antecedent, SeqExpression consequent) : antecedent(antecedent),
+    consequent(consequent) { }
 
     inline void setAntecedent(std::string antecedent) { (this->antecedent) = antecedent; }
     inline void setConsequent(SeqExpression consequent) { (this->consequent) = consequent; }
@@ -38,7 +41,7 @@ class SeqCaseSubExpr {
     SeqExpression consequent;
 };
 
-class SeqCaseExpr : SeqExpression {
+class SeqCaseExpr : public SeqExpression {
   public:
 
     SeqCaseExpr() { }
@@ -52,10 +55,12 @@ class SeqCaseExpr : SeqExpression {
 
 };
 
-class SeqIntervalExpr : SeqExpression {
+class SeqIntervalExpr : public SeqExpression {
   public:
 
     SeqIntervalExpr() { }
+    SeqIntervalExpr(std::string from, std::string to) : from(from),
+    to(to) { }
 
     inline void setFrom(std::string from) { (this->from) = from; }
     inline void setTo(std::string to) { (this->to) = to; }
@@ -69,7 +74,7 @@ class SeqIntervalExpr : SeqExpression {
     std::string to;
 };
 
-class SeqSetExpr : SeqExpression {
+class SeqSetExpr : public SeqExpression {
   public:
 
     SeqSetExpr() { }
@@ -88,6 +93,10 @@ class ConExpression {
   public:
 
     ConExpression() { }
+    ConExpression(std::string antecedent, std::string label, SeqSetExpr consequent) :
+    antecedent(antecedent),
+    label(label),
+    consequent(consequent) { }
 
     inline void setAntecedent(std::string antecedent) { (this->antecedent) = antecedent; }
     inline void setLabel(std::string label) { (this->label) = label; }

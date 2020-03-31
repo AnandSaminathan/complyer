@@ -6,6 +6,8 @@ class Init {
   public:
 
     Init() { }
+    Init(std::string id, SeqExpression definition) : id(id),
+    definition(definition) { }
 
     inline void setId(std::string id) { (this->id) = id; }
     inline void setDefinition(SeqExpression definition) { (this->definition) = definition; }
@@ -24,6 +26,8 @@ class SeqNext {
   public:
 
     SeqNext() { }
+    SeqNext(std::string id, SeqExpression definition) : id(id),
+    definition(definition) { }
 
     inline void setId(std::string id) { (this->id) = id; } 
     inline void setDefinition(SeqExpression definition) { (this->definition) = definition; }
@@ -42,6 +46,8 @@ class ConNext {
   public:
 
     ConNext() { }
+    ConNext(std::vector<std::string> ids, ConExpression definition) : ids(ids),
+    definition(definition) { }
 
     inline void setIds(std::vector<std::string> ids) { (this->ids) = ids; }
     inline void setDefinition(ConExpression definition) { (this->definition) = definition; }

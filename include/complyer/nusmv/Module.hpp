@@ -2,6 +2,7 @@
 
 #include <optional>
 #include "Assignment.hpp"
+#include "Definition.hpp"
 #include "verification-algorithms/common/symbol.hpp"
 
 class Module {
@@ -31,6 +32,10 @@ class Module {
       symbols.emplace_back(symbol);
     }
 
+    inline void addDefinition(Definition definition) {
+      definitions.emplace_back(definition);
+    }
+
     inline std::string getName() { return name; }
     inline std::optional<std::vector<std::string>> getParameters() { return parameters; }
     inline std::optional<Assignment> getAssignment() { return assignment; }
@@ -45,5 +50,6 @@ class Module {
     std::optional<Assignment> assignment;
     std::optional<std::string> init;
     std::optional<std::string> trans;
+    std::vector<Definition> definitions;
 
 };
