@@ -82,11 +82,25 @@ class NuSMVListener : public NuSMVParserBaseListener {
 
     void exitConNextAssignment(NuSMVParser::ConNextAssignmentContext *ctx) override { 
       auto idCtxs = (ctx->set())->id();
+      auto symbols = module.getSymbols();
+      std::vector<std::string> symbolNames;
       std::vector<std::string> ids;
+      std::vector<std::string> notPresent;
+      ConNext conNext;
+
+      conNext.setDefinition(conExpression);
       for(auto idCtx: idCtxs) {
         ids.emplace_back(idCtx->getText());
       }
-      ConNext conNext(ids, conExpression);
+      conNext.setIds(ids);
+
+      for(auto symbol : symbols) { symbolNames.emplace_back(symbol.getName()); }
+      sort(ids.begin(), ids.end());
+      sort(symbolNames.begin(), symbolNames.end());
+      std::set_difference(symbolNames.begin(), symbolNames.end(), 
+        ids.begin(), ids.end(), std::inserter(notPresent, notPresent.end()));
+      conNext.setNotPresent(notPresent);
+
       assignment.addConNext(conNext);
     }
 

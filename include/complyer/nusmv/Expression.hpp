@@ -77,7 +77,7 @@ class SeqCaseExpr : public SeqExpression {
       std::string formula = "";
       for(auto expression : subExpressions) {
         if(formula == "") { formula = expression.toFormulaString(id); }
-        else { formula = lor(formula, expression.toFormulaString(id)); }
+        else { formula = land(formula, expression.toFormulaString(id)); }
       }
       return parenthesize(formula);
     }

@@ -53,21 +53,32 @@ class ConNext {
   public:
 
     ConNext() { }
-    ConNext(std::vector<std::string> ids, ConExpression definition) : ids(ids),
-    definition(definition) { }
+    ConNext(std::vector<std::string> ids, std::vector<std::string> notPresent, ConExpression definition) 
+    : ids(ids),
+      notPresent(notPresent),
+      definition(definition) { }
 
     inline void setIds(std::vector<std::string> ids) { (this->ids) = ids; }
+    inline void setNotPresent(std::vector<std::string> notPresent) { (this->notPresent) = notPresent; }
     inline void setDefinition(ConExpression definition) { (this->definition) = definition; }
 
     inline std::vector<std::string> getIds() { return ids; }
+    inline std::vector<std::string> getNotPresent() { return notPresent; }
     inline ConExpression getDefinition() { return definition; } 
 
     std::string toFormulaString() {
-      return definition.toFormulaString(ids);
-    }   
+      std::string formula = definition.toFormulaString(ids);
+
+      for(auto id : notPresent) {
+        formula = land(formula, leq(nextId(id), id));
+      }
+
+      return parenthesize(formula);
+    }
 
   private:
 
     std::vector<std::string> ids;
+    std::vector<std::string> notPresent;
     ConExpression definition;
 };

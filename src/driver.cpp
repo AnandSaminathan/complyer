@@ -63,7 +63,7 @@ void printVariables(NuSMV& nusmv) {
   std:: cout << '\n';
 }
 
-void printKripke(InputOptions &inputOptions, Kripke &spec){
+void printKripke(Kripke &spec){
   std::cout << "I: " << spec.getI() << '\n';
   std::cout << "T: " << spec.getT() << '\n';
 }
@@ -97,8 +97,10 @@ int main(int argc, char* argv[]) {
   InputOptions inputOptions = processInput(argc,argv);
   NuSMV nusmv = constructModel(inputOptions);
   Kripke k = nusmv.toFormula();
-  printVariables(nusmv);
-  printKripke(inputOptions, k);
+  if(inputOptions.verbose) {
+    printVariables(nusmv);
+    printKripke(k);
+  }
 
   Interpreter interpreter(nusmv.getSymbols(), k.getI(),
           k.getT(), std::map<std::string, std::string>());
