@@ -41,6 +41,17 @@ class Module {
     inline std::optional<Assignment> getAssignment() { return assignment; }
     inline std::optional<std::string> getInit() { return init; }
     inline std::optional<std::string> getTrans() { return trans; }
+    inline std::vector<Symbol> getSymbols() { return symbols; }
+
+    Kripke toFormula() {
+      std::string I = "";
+      std::string T = "";
+
+      assert(!(assignment && init) && !(assignment && trans));
+
+      if(init) { return Kripke(*init, *trans); }
+      else { return assignment->toFormula(); } 
+    }
 
   private:
 

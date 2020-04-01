@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Functions.hpp"
+#include "complyer/util/Kripke.hpp"
 
 class Assignment {
   public:
@@ -14,6 +15,33 @@ class Assignment {
     inline std::vector<Init> getInits() { return inits; }
     inline std::vector<SeqNext> getSeqNexts() { return seqNexts; }
     inline std::vector<ConNext> getConNexts() { return conNexts; }
+
+    Kripke toFormula() {
+      assert(!(seqNexts.size() && conNexts.size()));
+
+      std::string I = "";
+      for(auto init : inits) {
+        if(I == "") {I = init.toFormulaString(); }
+        else { I = land(I, init.toFormulaString()); }
+      }
+
+      std::string T = "";
+      if(seqNexts.size()) {
+        std::vector<std::string> clauses;
+        for(auto seqNext : seqNexts) {
+          clauses.emplace_back(seqNext.toFormulaString());
+        }
+        T = allTrue(clauses);
+      } else {
+        std::vector<std::string> clauses;
+        for(auto conNext : conNexts)  {
+          clauses.emplace_back(conNext.toFormulaString());
+        }
+        T = exactlyOneTrue(clauses);
+      }
+
+      return Kripke(I, T);
+    }
 
 
   private:

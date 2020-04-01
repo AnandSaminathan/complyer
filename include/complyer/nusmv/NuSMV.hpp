@@ -14,6 +14,20 @@ class NuSMV {
     inline std::vector<Module> getModules() { return modules; }
     inline std::vector<Specification> getSpecifications() { return specifications; }
 
+    inline Kripke toFormula() { 
+      assert(modules.size() == 1);
+      return modules[0].toFormula();
+    }
+
+    inline std::vector<Symbol> getSymbols() {
+      std::vector<Symbol> symbols;
+      for(auto module : modules) {
+        auto cur = module.getSymbols();
+        symbols.insert(symbols.end(), cur.begin(), cur.end());
+      }
+      return symbols;
+    }
+
   private:
 
     std::vector<Module> modules;

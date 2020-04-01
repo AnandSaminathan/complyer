@@ -12,10 +12,8 @@
 class NuSMVListener : public NuSMVParserBaseListener {
   public:
 
-    void enterModule(NuSMVParser::ModuleContext *ctx) override { 
-      module.setName((ctx->name)->getText());
-    }
     void exitModule(NuSMVParser::ModuleContext *ctx) override { 
+      module.setName((ctx->name)->getText());
       nusmv.addModule(module);
       module = Module();
     }
@@ -110,7 +108,6 @@ class NuSMVListener : public NuSMVParserBaseListener {
     void enterSeqSetExpr(NuSMVParser::SeqSetExprContext *ctx) override {
       seqSetExpr = SeqSetExpr();
     }
-
     void exitSeqSetExpr(NuSMVParser::SeqSetExprContext *ctx) override {
       seqExpression = seqSetExpr;
     }

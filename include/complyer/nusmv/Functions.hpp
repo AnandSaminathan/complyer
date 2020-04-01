@@ -15,6 +15,9 @@ class Init {
     inline std::string getId() { return id; }
     inline SeqExpression getDefinition() { return definition; }
 
+    std::string toFormulaString() {
+      return definition.toFormulaString(id);
+    }
 
   private:
 
@@ -35,6 +38,10 @@ class SeqNext {
     inline std::string getId() { return id; }
     inline SeqExpression getDefinition() { return definition; }
 
+    std::string toFormulaString() {
+      return definition.toFormulaString(id, true);
+    }
+
   private:
 
     std::string id;
@@ -53,7 +60,11 @@ class ConNext {
     inline void setDefinition(ConExpression definition) { (this->definition) = definition; }
 
     inline std::vector<std::string> getIds() { return ids; }
-    inline ConExpression getDefinition() { return definition; }    
+    inline ConExpression getDefinition() { return definition; } 
+
+    std::string toFormulaString() {
+      return definition.toFormulaString(ids);
+    }   
 
   private:
 
