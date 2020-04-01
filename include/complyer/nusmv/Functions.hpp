@@ -6,46 +6,46 @@ class Init {
   public:
 
     Init() { }
-    Init(std::string id, SeqExpression definition) : id(id),
+    Init(std::string id, std::shared_ptr<SeqExpression> definition) : id(id),
     definition(definition) { }
 
     inline void setId(std::string id) { (this->id) = id; }
-    inline void setDefinition(SeqExpression definition) { (this->definition) = definition; }
+    inline void setDefinition(std::shared_ptr<SeqExpression> definition) { (this->definition) = definition; }
 
     inline std::string getId() { return id; }
-    inline SeqExpression getDefinition() { return definition; }
+    inline std::shared_ptr<SeqExpression> getDefinition() { return definition; }
 
     std::string toFormulaString() {
-      return definition.toFormulaString(id);
+      return definition->toFormulaString(id);
     }
 
   private:
 
     std::string id;
-    SeqExpression definition;
+    std::shared_ptr<SeqExpression> definition;
 };
 
 class SeqNext {
   public:
 
     SeqNext() { }
-    SeqNext(std::string id, SeqExpression definition) : id(id),
+    SeqNext(std::string id, std::shared_ptr<SeqExpression> definition) : id(id),
     definition(definition) { }
 
     inline void setId(std::string id) { (this->id) = id; } 
-    inline void setDefinition(SeqExpression definition) { (this->definition) = definition; }
+    inline void setDefinition(std::shared_ptr<SeqExpression> definition) { (this->definition) = definition; }
 
     inline std::string getId() { return id; }
-    inline SeqExpression getDefinition() { return definition; }
+    inline std::shared_ptr<SeqExpression> getDefinition() { return definition; }
 
     std::string toFormulaString() {
-      return definition.toFormulaString(id, true);
+      return definition->toFormulaString(id, true);
     }
 
   private:
 
     std::string id;
-    SeqExpression definition;
+    std::shared_ptr<SeqExpression> definition;
 };
 
 

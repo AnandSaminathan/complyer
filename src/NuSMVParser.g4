@@ -21,7 +21,7 @@ safetySpec         : SAFETYSPEC newline WS? formula WS? (newline bound)?;
 ltlSpec            : LTLSPEC newline WS? formula WS? newline bound;
 
 parameters         : WS? OPEN_P id (COMMA WS? id)* CLOSE_P;
-declaration        : VAR WS id  WS? COLON WS? type WS? SC;
+declaration        : VAR WS id  WS? COLON WS? type WS? SC WS?;
 assignment         : ASSIGN WS? newline ( initAssignment
                                         | seqNextAssignment
                                         | conNextAssignment
@@ -47,17 +47,17 @@ seqExpression      : seqSimpleExpr
                    ;
 
 seqSimpleExpr      : formula;
-seqCaseExpr        : WS? CASE WS? newline (seqCaseSubExpr | newline)+ WS? ESAC SC WS?;
+seqCaseExpr        : WS? CASE WS? newline (seqCaseSubExpr | newline)+ WS? ESAC WS?;
 seqIntervalExpr    : from=wholeNumber DOT DOT to=wholeNumber;
 seqSetExpr         : OPEN_C WS? seqSetSubExpr (WS? COMMA WS? seqSetSubExpr)* WS? CLOSE_C WS?;
-seqCaseSubExpr     : formula WS? COLON WS? seqExpression;
+seqCaseSubExpr     : WS? formula WS? COLON WS? seqExpression WS? SC WS?;
 seqSetSubExpr      : seqExpression;
 
 // concurrent expression
 
 conExpression      : formula WS? label WS? COLON WS? seqSetExpr;
 
-definition         : WS? id WS? assign WS? formula WS? SC;
+definition         : WS? id WS? assign WS? formula WS? SC WS?;
 
 label              : OPEN_S WS? id WS? CLOSE_S;
 type               : BOOLEAN | INTEGER;

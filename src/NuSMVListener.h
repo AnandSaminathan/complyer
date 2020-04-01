@@ -92,24 +92,24 @@ class NuSMVListener : public NuSMVParserBaseListener {
 
     void enterSeqSimpleExpr(NuSMVParser::SeqSimpleExprContext *ctx) override {
       SeqSimpleExpr seqSimpleExpr((ctx->formula())->getText());
-      seqExpression = seqSimpleExpr;
+      seqExpression = seqSimpleExpr.clone();
     }
 
     void exitSeqCaseExpr(NuSMVParser::SeqCaseExprContext *ctx) override { 
-      seqExpression = seqCaseExpr;
+      seqExpression = seqCaseExpr.clone();
       seqCaseExpr = SeqCaseExpr();
     }
 
     void exitSeqIntervalExpr(NuSMVParser::SeqIntervalExprContext *ctx) override { 
       SeqIntervalExpr seqIntervalExpr((ctx->from)->getText(), (ctx->to)->getText());
-      seqExpression = seqIntervalExpr;
+      seqExpression = seqIntervalExpr.clone();
     }
 
     void enterSeqSetExpr(NuSMVParser::SeqSetExprContext *ctx) override {
       seqSetExpr = SeqSetExpr();
     }
     void exitSeqSetExpr(NuSMVParser::SeqSetExprContext *ctx) override {
-      seqExpression = seqSetExpr;
+      seqExpression = seqSetExpr.clone();
     }
 
     void exitSeqSetSubExpr(NuSMVParser::SeqSetSubExprContext *ctx) override {
@@ -139,7 +139,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
     NuSMV nusmv;
     Module module;
     Assignment assignment;
-    SeqExpression seqExpression;
+    std::shared_ptr<SeqExpression> seqExpression;
     ConExpression conExpression;
     SeqCaseExpr seqCaseExpr;
     SeqSetExpr seqSetExpr;

@@ -27,7 +27,7 @@ PLUS        : '+';
 MINUS       : '-';
 DIV         : '/';
 MUL         : '*';
-MOD 		: '%';
+MOD 		    : '%';
 NOT         : '!';
 AND         : '&&';
 OR          : '||';
