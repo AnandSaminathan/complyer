@@ -1,0 +1,14 @@
+-- http://nusmv.fbk.eu/NuSMV/userman/v21/nusmv_2.html#SEC2
+
+MODULE main
+
+VAR request : boolean;
+VAR state   : integer;
+
+ASSIGN
+
+init(state) := 0;
+next(state) := case
+                 (state == 0 && request) : 1;
+                 !(state == 0 && request) : {0, 1};
+               esac;
