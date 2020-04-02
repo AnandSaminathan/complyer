@@ -54,7 +54,8 @@ class Module {
     }
 
     std::map<std::string, std::string> getMapping() {
-      substitutionMap = assignment->getMapping();
+      if(assignment) { substitutionMap = assignment->getMapping(); }
+      else { substitutionMap = std::map<std::string, std::string>(); }
       for(auto definition : definitions) {
         substitutionMap[definition.getId()] = definition.getDefinition();
       }

@@ -1,0 +1,16 @@
+MODULE main
+
+VAR a : boolean;
+VAR b : boolean;
+VAR c : boolean;
+
+INIT
+
+(a == true) && (b == false) && (c == false)
+
+TRANS
+
+(next_a == c) && (next_b == a) && (next_c == b)
+
+SAFETYSPEC
+((a && !b && !c) || (!a && b && !c) || (!a && !b && c))
