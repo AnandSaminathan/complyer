@@ -67,18 +67,22 @@ class ConNext {
     inline ConExpression getDefinition() { return definition; } 
 
     std::string toFormulaString() {
+      if((this->formula) != "") { return formula; }
+
       std::string formula = definition.toFormulaString(ids);
 
       for(auto id : notPresent) {
         formula = land(formula, leq(nextId(id), id));
       }
 
-      return parenthesize(formula);
+      (this->formula) = parenthesize(formula);
+      return (this->formula);
     }
 
   private:
 
     std::vector<std::string> ids;
     std::vector<std::string> notPresent;
+    std::string formula;
     ConExpression definition;
 };

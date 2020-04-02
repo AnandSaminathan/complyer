@@ -28,9 +28,19 @@ class NuSMV {
       return symbols;
     }
 
+    std::map<std::string, std::string> getMapping() {
+      for(auto module : modules) {
+        auto moduleMap = module.getMapping();
+        substitutionMap.insert(moduleMap.begin(), moduleMap.end());
+      }
+      return substitutionMap;
+    }
+
+
   private:
 
     std::vector<Module> modules;
     std::vector<Specification> specifications;
+    std::map<std::string, std::string> substitutionMap;
 
 };

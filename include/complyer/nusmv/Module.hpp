@@ -53,6 +53,14 @@ class Module {
       else { return assignment->toFormula(); } 
     }
 
+    std::map<std::string, std::string> getMapping() {
+      substitutionMap = assignment->getMapping();
+      for(auto definition : definitions) {
+        substitutionMap[definition.getId()] = definition.getDefinition();
+      }
+      return substitutionMap;
+    }
+
   private:
 
     std::string name;
@@ -62,5 +70,6 @@ class Module {
     std::optional<std::string> init;
     std::optional<std::string> trans;
     std::vector<Definition> definitions;
+    std::map<std::string, std::string> substitutionMap;
 
 };

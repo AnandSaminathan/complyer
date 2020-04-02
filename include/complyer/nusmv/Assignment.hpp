@@ -43,6 +43,15 @@ class Assignment {
       return Kripke(I, T);
     }
 
+    std::map<std::string, std::string> getMapping() {
+      std::map<std::string, std::string> labeToTransition;
+      for(auto conNext : conNexts) {
+        auto definition = conNext.getDefinition();
+        labeToTransition[definition.getLabel()] = definition.getAntecedent();
+      }
+      return labeToTransition;
+    }
+
 
   private:
 

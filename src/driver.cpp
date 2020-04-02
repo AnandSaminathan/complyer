@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
   }
 
   Interpreter interpreter(nusmv.getSymbols(), k.getI(),
-          k.getT(), std::map<std::string, std::string>());
+          k.getT(), nusmv.getMapping());
   verifyPropertyInProgram(nusmv, interpreter);
 
   runInteractive(inputOptions, interpreter);
