@@ -1,6 +1,6 @@
 #include <fstream>
 
-#include "NuSMVListener.h"
+#include "./complyer/NuSMVListener.h"
 #include "complyer/nusmv/NuSMV.hpp"
 #include "interpreter/Interpreter.h"
 

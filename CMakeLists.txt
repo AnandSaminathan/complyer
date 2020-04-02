@@ -32,8 +32,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src/)
 find_package(ANTLR REQUIRED)
 
 
-antlr_target(GrammarLexer ${PROJECT_SOURCE_DIR}/src/NuSMVLexer.g4 LEXER)
-antlr_target(GrammarParser ${PROJECT_SOURCE_DIR}/src/NuSMVParser.g4
+antlr_target(GrammarLexer ${PROJECT_SOURCE_DIR}/src/complyer/NuSMVLexer.g4 LEXER)
+antlr_target(GrammarParser ${PROJECT_SOURCE_DIR}/src/complyer/NuSMVParser.g4
              PARSER
              LISTENER
              DEPENDS_ANTLR GrammarLexer
