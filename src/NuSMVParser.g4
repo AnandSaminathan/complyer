@@ -4,54 +4,75 @@ options {
   tokenVocab = NuSMVLexer;
 }
 
-module             : (comment | newline)* MODULE WS MAIN WS? newline (varDeclaration
-                                                                      | assignBlock
-                                                                      | safetySpecBlock
-                                                                      | ltlSpecBlock
-                                                                      | comment
-                                                                      | newline)+ EOF;
+nusmv              : (newline | module)* module ( safetySpec
+                                                | ltlSpec
+                                                | newline
+                                                )* EOF; 
 
+module             : MODULE WS name=id WS? parameters? WS? newline ( declaration
+                                                                   | assignment
+                                                                   | init
+                                                                   | trans
+                                                                   | define
+                                                                   | newline
+                                                                   )+;
 
-assignBlock        : ASSIGN newline (init | next | concurrentNext | comment | newline)+;
-varDeclaration     : VAR WS id WS? COLON WS? type WS? SC WS?;
-init               : INIT OPEN_PARAN WS? id WS? CLOSE_PARAN WS? assign WS? expression WS? SC WS?;
-next               : NEXT OPEN_PARAN WS? id WS? CLOSE_PARAN WS? assign WS? expression WS? SC WS?;
-concurrentNext     : NEXT OPEN_PARAN WS? set WS? CLOSE_PARAN WS? assign WS? conExpression WS?;
-safetySpecBlock    : SAFETYSPEC newline WS? simpleExpression;
-ltlSpecBlock       : LTLSPEC newline WS? simpleExpression WS? newline BOUND WS? bound=wholeNumber;
-comment            : doubleDash ~(NL)*?;
+safetySpec         : SAFETYSPEC newline WS? formula WS? (newline bound)?;
+ltlSpec            : LTLSPEC newline WS? formula WS? newline bound;
 
-expression         : caseExpression   #caseExpr
-                   | simpleExpression #simpleExpr
-                   | set              #setExpr
-                   | interval         #intervalExpr
+parameters         : WS? OPEN_P id (COMMA WS? id)* CLOSE_P;
+declaration        : VAR WS id  WS? COLON WS? type WS? SC WS?;
+assignment         : ASSIGN WS? newline ( initAssignment
+                                        | seqNextAssignment
+                                        | conNextAssignment
+                                        | newline
+                                        )+;
+
+init               : INIT WS? newline WS? formula;
+trans              : TRANS WS? newline WS? formula;
+define             : DEFINE WS? newline (definition | newline)+;
+
+bound              : WS? BOUND WS? val=wholeNumber WS? SC;
+
+initAssignment     : WS? INITF OPEN_P WS? id WS? CLOSE_P WS? assign WS? seqExpression WS? SC WS?;
+seqNextAssignment  : WS? NEXT OPEN_P WS? id WS? CLOSE_P WS? assign WS? seqExpression WS? SC WS?;
+conNextAssignment  : WS? NEXT OPEN_P WS? set WS? CLOSE_P WS? assign WS? conExpression WS? SC WS?;
+
+// sequential expression
+
+seqExpression      : seqSimpleExpr
+                   | seqCaseExpr
+                   | seqIntervalExpr
+                   | seqSetExpr
                    ;
 
-conExpression      : WS? antecedent=simpleExpression WS? label WS? COLON WS? consequent=set SC WS?;
+seqSimpleExpr      : formula;
+seqCaseExpr        : WS? CASE WS? newline (seqCaseSubExpr | newline)+ WS? ESAC WS?;
+seqIntervalExpr    : from=wholeNumber DOT DOT to=wholeNumber;
+seqSetExpr         : OPEN_C WS? seqSetSubExpr (WS? COMMA WS? seqSetSubExpr)* WS? CLOSE_C WS?;
+seqCaseSubExpr     : WS? formula WS? COLON WS? seqExpression WS? SC WS?;
+seqSetSubExpr      : seqExpression;
 
-caseExpression     : CASE WS? newline? (caseSubExpression | newline)+ WS? ESAC;
+// concurrent expression
 
-caseSubExpression  : WS? antecedent=simpleExpression WS? COLON WS? consequent=simpleExpression SC WS?;
+conExpression      : formula WS? label WS? COLON WS? seqSetExpr;
 
-simpleExpression   : formula;
+definition         : WS? id WS? assign WS? formula WS? SC WS?;
 
-label              : OPEN_SQ WS? name=id WS? CLOSE_SQ;
+label              : OPEN_S WS? id WS? CLOSE_S;
 type               : BOOLEAN | INTEGER;
-interval           : from=wholeNumber DOT DOT to=wholeNumber;
-set                : OPEN_CURLY WS? simpleExpression (WS? COMMA WS? simpleExpression)* WS? CLOSE_CURLY;
+set                : OPEN_C WS? id (WS? COMMA WS? id)* WS? CLOSE_C;
 value              : (TRUE | FALSE | id | wholeNumber);
 
-formula            : (operators | OPEN_PARAN | CLOSE_PARAN | id | nextId | TRUE | FALSE | wholeNumber | WS)+;
+formula            : (operators | OPEN_P | CLOSE_P | id | nextId | TRUE | FALSE | wholeNumber | WS)+;
 assign             : COLON ASSGN;
 nextId             : NEXT UNDERSCORE id;
 id                 : (alpha | UNDERSCORE) (alphaNum | UNDERSCORE)*;
-wholeNumber        : (DIGIT | DIGIT+);
+wholeNumber        : (DIGIT)+;
 alpha              : (LOWER_CASE | UPPER_CASE);
 alphaNum           : (alpha | DIGIT);
 newline            : NL;
-doubleDash         : MINUS MINUS;
-operators          : (PLUS | MINUS | DIV | MUL | MOD
-                      | NOT | AND | OR | IMPLIES | EQUIVALENT 
-                      | EQ | NEQ | GT | LT | GTE | LTE 
+operators          : (PLUS | MINUS | DIV | MUL | MOD | NOT | AND | OR | IMPLIES | EQUIVALENT | EQ 
+                      | NEQ | GT | LT | GTE | LTE 
                       | NEXTOP | UNTIL | RELEASE | GLOBAL | FUTURE);
 

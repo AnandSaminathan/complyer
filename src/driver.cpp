@@ -1,7 +1,7 @@
 #include <fstream>
 
 #include "NuSMVListener.h"
-#include "complyer/ModelSpecification.h"
+#include "complyer/nusmv/NuSMV.hpp"
 #include "interpreter/Interpreter.h"
 
 using namespace antlr4;
@@ -40,42 +40,50 @@ InputOptions processInput(int argc,char* argv[]){
   }
   return inputOptions;
 }
-ModelSpecification constructModel(InputOptions &inputOptions) {
+
+NuSMV constructModel(InputOptions &inputOptions) {
   ANTLRInputStream input(inputOptions.input_program_stream);
   NuSMVLexer lexer(&input);
   CommonTokenStream tokens(&lexer);
   NuSMVParser parser(&tokens);
 
-  tree::ParseTree *tree = parser.module();
+  tree::ParseTree *tree = parser.nusmv();
   NuSMVListener listener;
   tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
 
-  return listener.getSpecification();
+  return listener.getNuSMV();
 }
-void printModelSpecification(InputOptions &inputOptions,ModelSpecification &spec){
-  if(inputOptions.verbose) {
-    std::vector<Symbol> symbol_set = spec.getSymbols();
-    std::cout << "Variables: \n";
-    for(Symbol s:symbol_set) {
-      std::cout << s.getName() << ' ';
+
+void printVariables(NuSMV& nusmv) {
+  std::cout << "Variables\n";
+  auto symbols = nusmv.getSymbols();
+  for(auto symbol: symbols) {
+    std::cout  << symbol.getName() << " ";
+  }
+  std:: cout << '\n';
+}
+
+void printKripke(Kripke &spec){
+  std::cout << "I: " << spec.getI() << '\n';
+  std::cout << "T: " << spec.getT() << '\n';
+}
+
+void verifyPropertyInProgram(NuSMV &nusmv, Interpreter &interpreter){
+  auto specifications = nusmv.getSpecifications();
+  for(auto specification : specifications) {
+    std::string property;
+    if(specification.getType() == SAFETYSPEC) {
+      property = StringConstants::SAFETYSPEC + " " + specification.getProperty();
+      interpreter.interpret(property);
+    } else {
+      property = StringConstants::BOUND + " " + specification.getBound();
+      interpreter.interpret(property);
+      property = StringConstants::LTLSPEC + " " + specification.getProperty();
+      interpreter.interpret(property);
     }
-    std::cout << '\n';
-    std::cout << "I: " << spec.getI() << '\n';
-    std::cout << "T: " << spec.getT() << '\n';
   }
 }
-void verifyPropertyInProgram(ModelSpecification &spec, Interpreter &interpreter){
-  std::string property;
-  if(spec.isLtl()){
-    property = StringConstants::BOUND + " " + std::to_string(spec.getBound());
-    interpreter.interpret(property);
-    property = StringConstants::LTLSPEC + " " + spec.getP();
-    interpreter.interpret(property);
-  } else {
-    property = StringConstants::SAFETYSPEC + " " + spec.getP();
-    interpreter.interpret(property);
-  }
-}
+
 void runInteractive(InputOptions &inputOptions, Interpreter &interpreter){
   while(inputOptions.interactive){
     std::string input;
@@ -84,14 +92,19 @@ void runInteractive(InputOptions &inputOptions, Interpreter &interpreter){
     interpreter.interpret(input);
   }
 }
+
 int main(int argc, char* argv[]) {
   InputOptions inputOptions = processInput(argc,argv);
-  ModelSpecification modelSpecification = constructModel(inputOptions);
-  printModelSpecification(inputOptions, modelSpecification);
+  NuSMV nusmv = constructModel(inputOptions);
+  Kripke k = nusmv.toFormula();
+  if(inputOptions.verbose) {
+    printVariables(nusmv);
+    printKripke(k);
+  }
 
-  Interpreter interpreter(modelSpecification.getSymbols(), modelSpecification.getI(),
-          modelSpecification.getT(), modelSpecification.getLabelMapper());
-  verifyPropertyInProgram(modelSpecification,interpreter);
+  Interpreter interpreter(nusmv.getSymbols(), k.getI(),
+          k.getT(), nusmv.getMapping());
+  verifyPropertyInProgram(nusmv, interpreter);
 
   runInteractive(inputOptions, interpreter);
 

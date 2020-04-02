@@ -30,6 +30,7 @@ public:
   }
 
   std::string perform() override {
+    std::cout << "Checking: " << property << '\n';
     FormulaTree tree(property);
     tree.substitute(this->label_mapper);
     property = tree.getFormula();

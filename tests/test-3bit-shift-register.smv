@@ -16,4 +16,4 @@ next(x2) := true;
 
 LTLSPEC
 G(x0 == false && x1 == false && x2 == false)
-BOUND 3
+BOUND 3;
