@@ -23,7 +23,7 @@ public:
     std::string command;
     ss >> command;
     std::transform(command.begin(),command.end(),command.begin(),::toupper);
-    if(command != StringConstants::SAFETYSPEC) return false;
+    if(command != getOperation()) return false;
     std::getline(ss,property);
     if(property.empty()) throw std::invalid_argument("Property is empty");
     return true;

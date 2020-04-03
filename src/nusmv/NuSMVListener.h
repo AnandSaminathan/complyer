@@ -43,6 +43,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
     void enterParameters(NuSMVParser::ParametersContext *ctx) override { 
       auto idCtxs = ctx->id();
       std::vector<std::string> ids;
+      ids.reserve(idCtxs.size());
       for(auto idCtx: idCtxs) {
         ids.emplace_back(idCtx->getText());
       }
@@ -89,11 +90,13 @@ class NuSMVListener : public NuSMVParserBaseListener {
       ConNext conNext;
 
       conNext.setDefinition(conExpression);
+      ids.reserve(idCtxs.size());
       for(auto idCtx: idCtxs) {
         ids.emplace_back(idCtx->getText());
       }
       conNext.setIds(ids);
 
+      symbolNames.reserve(symbols.size());
       for(auto symbol : symbols) { symbolNames.emplace_back(symbol.getName()); }
       sort(ids.begin(), ids.end());
       sort(symbolNames.begin(), symbolNames.end());

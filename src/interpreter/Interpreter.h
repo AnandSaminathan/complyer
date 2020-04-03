@@ -15,7 +15,7 @@ class Interpreter {
 
   ltlBmc ltl_bmc_verifier;
   kInduction k_induction_verifier;
-  Verifier *common_verifier = NULL;
+  Verifier *common_verifier = nullptr;
   std::map<std::string, std::string> label_mapper;
 
   CommandLtlspec ltlspec;
