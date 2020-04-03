@@ -14,4 +14,5 @@ public:
   }
   virtual bool parse(std::string line) = 0;
   virtual std::string perform() = 0;
+  inline std::string getOperation() { return operation;}
 };

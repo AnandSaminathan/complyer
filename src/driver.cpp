@@ -3,46 +3,11 @@
 #include "./nusmv/NuSMVListener.h"
 #include "complyer/nusmv/NuSMV.hpp"
 #include "interpreter/Interpreter.h"
-
+#include "InputOptions.h"
 using namespace antlr4;
 
-struct InputOptions {
-  bool interactive;
-  bool verbose;
-  bool input_program_set;
-  std::ifstream input_program_stream;
-  InputOptions(){
-      interactive = false;
-      verbose = false;
-      input_program_set = false;
-  }
-};
-
-InputOptions processInput(int argc,char* argv[]){
-  int it = 1;
-  InputOptions inputOptions;
-  while(it < argc){
-    std::string cur(argv[it]);
-    if(cur == "-i" || cur == "--interactive"){
-      inputOptions.interactive = true;
-      it++;
-    } else if(cur == "-v" || cur == "--verbose"){
-      inputOptions.verbose = true;
-      it++;
-    } else {
-      inputOptions.input_program_set = true;
-      inputOptions.input_program_stream.open(cur.c_str());
-      it++;
-    }
-  }
-  if(!inputOptions.input_program_set){
-    throw std::invalid_argument("Program file not specified");
-  }
-  return inputOptions;
-}
-
 NuSMV constructModel(InputOptions &inputOptions) {
-  ANTLRInputStream input(inputOptions.input_program_stream);
+  ANTLRInputStream input((std::istream &) inputOptions.getInputProgramStream());
   NuSMVLexer lexer(&input);
   CommonTokenStream tokens(&lexer);
   NuSMVParser parser(&tokens);
@@ -85,7 +50,7 @@ void verifyPropertyInProgram(NuSMV &nusmv, Interpreter &interpreter){
 }
 
 void runInteractive(InputOptions &inputOptions, Interpreter &interpreter){
-  while(inputOptions.interactive){
+  while(inputOptions.isInteractive()){
     std::string input;
     std::cout << ">>> ";
     getline(std::cin,input);
@@ -94,10 +59,10 @@ void runInteractive(InputOptions &inputOptions, Interpreter &interpreter){
 }
 
 int main(int argc, char* argv[]) {
-  InputOptions inputOptions = processInput(argc,argv);
+  InputOptions inputOptions(argc,argv);
   NuSMV nusmv = constructModel(inputOptions);
   Kripke k = nusmv.toFormula();
-  if(inputOptions.verbose) {
+  if(inputOptions.isVerbose()) {
     printVariables(nusmv);
     printKripke(k);
   }

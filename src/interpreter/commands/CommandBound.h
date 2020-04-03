@@ -22,7 +22,7 @@ class CommandBound : public CommandInterface {
       std::string command;
       ss >> command;
       std::transform(command.begin(),command.end(),command.begin(),::toupper);
-      if(command != StringConstants::BOUND) return false;
+      if(command != getOperation()) return false;
       if(ss>>bound) return true;
       else throw std::invalid_argument("Bound is empty");
     }

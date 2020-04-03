@@ -14,7 +14,7 @@ public:
         std::string command;
         ss >> command;
         std::transform(command.begin(),command.end(),command.begin(),::toupper);
-        return (command == StringConstants::QUIT);
+        return (command == getOperation());
     }
 
     std::string perform() override {
