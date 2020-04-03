@@ -9,10 +9,6 @@
 #include <cassert>
 
 class InputOptions {
-  bool interactive;
-  bool verbose;
-  bool input_program_set;
-  std::ifstream input_program_stream;
 public:
   InputOptions() {
     interactive = false;
@@ -55,5 +51,11 @@ public:
     assert(input_program_set);
     return input_program_stream;
   }
+
+private:
+  bool interactive;
+  bool verbose;
+  bool input_program_set;
+  std::ifstream input_program_stream;
 };
 #endif //SMV_INPUTOPTIONS_H
