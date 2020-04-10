@@ -63,20 +63,15 @@ void runInteractive(InputOptions &inputOptions, Interpreter &interpreter){
 int main(int argc, char* argv[]) {
   InputOptions inputOptions(argc,argv);
   NuSMV nusmv = constructModel(inputOptions);
-  Kripke kripke = nusmv.toFormula();
-
-  // Verbose Mode
+  Kripke k = nusmv.toFormula();
   if(inputOptions.isVerbose()) {
     printVariables(nusmv);
-    printKripke(kripke);
+    printKripke(k);
   }
 
-  CommandBase commandBase(nusmv.getSymbols(),kripke,nusmv.getMapping());
-
-  Interpreter interpreter(commandBase);
+  Interpreter interpreter(nusmv.getSymbols(), k, nusmv.getMapping());
   verifyPropertyInProgram(nusmv, interpreter);
 
-  // Interactive Mode
   runInteractive(inputOptions, interpreter);
 
   return 0;
