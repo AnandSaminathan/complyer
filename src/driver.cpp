@@ -4,6 +4,8 @@
 #include "complyer/nusmv/NuSMV.hpp"
 #include "interpreter/Interpreter.h"
 #include "InputOptions.h"
+#include "StringConstants.h"
+
 using namespace antlr4;
 
 NuSMV constructModel(InputOptions &inputOptions) {
@@ -67,8 +69,7 @@ int main(int argc, char* argv[]) {
     printKripke(k);
   }
 
-  Interpreter interpreter(nusmv.getSymbols(), k.getI(),
-          k.getT(), nusmv.getMapping());
+  Interpreter interpreter(nusmv.getSymbols(), k, nusmv.getMapping());
   verifyPropertyInProgram(nusmv, interpreter);
 
   runInteractive(inputOptions, interpreter);

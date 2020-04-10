@@ -44,12 +44,12 @@ include_directories(${ANTLR_GrammarParser_OUTPUT_DIR})
 
 file(GLOB SOURCE ${PROJECT_SOURCE_DIR}/src/*.cpp
                 ${PROJECT_SOURCE_DIR}/src/*.h
-#		${PROJECT_SOURCE_DIR}/src/complyer/*.cpp
         ${PROJECT_SOURCE_DIR}/src/listener/*.h
         ${PROJECT_SOURCE_DIR}/src/listener/*.cpp
         ${PROJECT_SOURCE_DIR}/src/interpreter/*.h
         ${PROJECT_SOURCE_DIR}/src/interpreter/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/interpreter/commands/*.h
+        ${PROJECT_SOURCE_DIR}/src/commands/*.h
+        ${PROJECT_SOURCE_DIR}/src/commands/*.cpp
         )
 
 add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp
