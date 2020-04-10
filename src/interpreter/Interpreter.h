@@ -9,8 +9,8 @@
 class Interpreter {
   CommandBase command_base;
 public:
-  Interpreter(const std::vector<Symbol>& symbols, Kripke kripke, const std::map<std::string, std::string>& labelMapper) :
-    command_base(symbols,std::move(kripke),labelMapper)
+  explicit Interpreter(CommandBase commandBase) :
+    command_base(std::move(commandBase))
   {  }
   void interpret(const std::string& input);
 };
