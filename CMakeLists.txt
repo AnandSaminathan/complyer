@@ -47,9 +47,6 @@ file(GLOB SOURCE ${PROJECT_SOURCE_DIR}/src/*.cpp
         ${PROJECT_SOURCE_DIR}/src/listener/*.h
         ${PROJECT_SOURCE_DIR}/src/listener/*.cpp
         ${PROJECT_SOURCE_DIR}/src/interpreter/*.h
-        ${PROJECT_SOURCE_DIR}/src/interpreter/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/batch_processor/*.h
-        ${PROJECT_SOURCE_DIR}/src/batch_processor/*.cpp
         ${PROJECT_SOURCE_DIR}/src/commands/*.h
         ${PROJECT_SOURCE_DIR}/src/commands/*.cpp
         )

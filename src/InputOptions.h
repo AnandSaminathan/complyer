@@ -1,9 +1,4 @@
-//
-// Created by User on 03-04-2020.
-//
-
-#ifndef SMV_INPUTOPTIONS_H
-#define SMV_INPUTOPTIONS_H
+#pragma once
 
 #include <fstream>
 #include <cassert>
@@ -80,4 +75,3 @@ private:
   bool input_program_set;
   std::ifstream input_program_stream;
 };
-#endif //SMV_INPUTOPTIONS_H
