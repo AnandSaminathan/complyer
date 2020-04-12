@@ -44,13 +44,18 @@ include_directories(${ANTLR_GrammarParser_OUTPUT_DIR})
 
 file(GLOB SOURCE ${PROJECT_SOURCE_DIR}/src/*.cpp
                 ${PROJECT_SOURCE_DIR}/src/*.h
-#		${PROJECT_SOURCE_DIR}/src/complyer/*.cpp
         ${PROJECT_SOURCE_DIR}/src/listener/*.h
         ${PROJECT_SOURCE_DIR}/src/listener/*.cpp
         ${PROJECT_SOURCE_DIR}/src/interpreter/*.h
-        ${PROJECT_SOURCE_DIR}/src/interpreter/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/interpreter/commands/*.h
         )
+
+add_library(command_base SHARED ${PROJECT_SOURCE_DIR}/src/commands/CommandBase.h
+        ${PROJECT_SOURCE_DIR}/src/commands/CommandBase.cpp
+        ${PROJECT_SOURCE_DIR}/src/commands/CommandResponse.h)
+
+target_link_libraries(command_base ${PROJECT_SOURCE_DIR}/libs/libz3.so)
+target_link_libraries(command_base ${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so)
+target_link_libraries(command_base ${PROJECT_SOURCE_DIR}/libs/libformula-tree.so)
 
 add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp
                     ${ANTLR_GrammarLexer_CXX_OUTPUTS}
@@ -59,9 +64,4 @@ add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp
                   )
 
 target_link_libraries(complyer antlr4_shared)
-target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libz3.so)
-target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so)
-target_link_libraries(complyer ${PROJECT_SOURCE_DIR}/libs/libformula-tree.so)
-
-
-
+target_link_libraries(complyer command_base)
