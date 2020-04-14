@@ -8,12 +8,10 @@
 
 class Interpreter {
   CommandBase command_base;
-  std::function<void(CommandResponse,CommandBase)> print_function;
+  std::function<void(CommandResponse,CommandBase&)> print_function;
 public:
-  Interpreter(const std::vector<Symbol>& symbols, Kripke kripke, const std::map<std::string, std::string>& labelMapper) :
-    command_base(symbols,std::move(kripke),labelMapper)
-  {  }
-  void setPrinter(std::function<void(CommandResponse,CommandBase)> printer){
+  explicit Interpreter(CommandBase &commandBase): command_base(commandBase) {}
+  void setPrinter(std::function<void(CommandResponse,CommandBase&)> printer){
     print_function = std::move(printer);
   }
   void interpret(const std::string& input) {

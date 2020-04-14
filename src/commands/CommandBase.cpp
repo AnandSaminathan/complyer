@@ -5,11 +5,6 @@
 #include <StringConstants.h>
 #include <chrono>
 
-void CommandBase::resetModel(const std::vector<Symbol> &symbols, Kripke kripke,
-                             const std::map<std::string, std::string>& labelMapper) {
-  *this = CommandBase(symbols,std::move(kripke),labelMapper);
-}
-
 CommandResponse CommandBase::perform(const std::string &line) {
   CommandInterface *command_interface = nullptr;
   if(command_quit.parse(line)) {

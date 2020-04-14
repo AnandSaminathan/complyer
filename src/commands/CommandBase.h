@@ -9,19 +9,42 @@
 
 class CommandBase {
   public:
+    struct CommandBaseSignature {
+      std::vector<Symbol> symbols;
+      Kripke kripke;
+      std::map<std::string,std::string> label_mapper;
+      CommandBaseSignature(std::vector<Symbol> s, Kripke k, std::map<std::string,std::string> labelMapper)
+              :symbols(std::move(s)), kripke(std::move(k)), label_mapper(std::move(labelMapper)){}
+    };
     CommandBase(const std::vector<Symbol>& symbols,Kripke kripke,const std::map<std::string,std::string>& labelMapper)
-    : ltl_bmc_verifier(symbols,kripke.getI(),kripke.getT()),
-      k_induction_verifier(symbols,kripke.getI(),kripke.getT()),
+    : signature(symbols, std::move(kripke), labelMapper),
+      ltl_bmc_verifier(signature.symbols,signature.kripke.getI(),signature.kripke.getT()),
+      k_induction_verifier(signature.symbols,signature.kripke.getI(),signature.kripke.getT()),
       command_bound(ltl_bmc_verifier),
       command_length(*common_verifier),
-      command_ltlspec(ltl_bmc_verifier,labelMapper),
-      command_safetyspec(k_induction_verifier,labelMapper),
+      command_ltlspec(ltl_bmc_verifier,signature.label_mapper),
+      command_safetyspec(k_induction_verifier,signature.label_mapper),
       command_trace(*common_verifier)
       {}
-    void resetModel(const std::vector<Symbol>& symbols,Kripke kripke,const std::map<std::string,std::string>& labelMapper);
-
+    explicit CommandBase(const CommandBaseSignature& commandBaseSignature)
+      : CommandBase(commandBaseSignature.symbols, commandBaseSignature.kripke, commandBaseSignature.label_mapper){}
+    CommandBase(const CommandBase &commandBase): CommandBase(commandBase.getSignature()) {};
     CommandResponse perform(const std::string &line);
+    [[nodiscard]] inline CommandBaseSignature getSignature() const {
+      return signature;
+    }
+    inline void setModel(CommandBaseSignature &commandBaseSignature) {
+      signature = commandBaseSignature;
+      ltl_bmc_verifier = ltlBmc(signature.symbols,signature.kripke.getI(),signature.kripke.getT());
+      k_induction_verifier = kInduction(signature.symbols, signature.kripke.getI(), signature.kripke.getT());
+      command_bound = CommandBound(ltl_bmc_verifier);
+      command_length = CommandLength(*common_verifier);
+      command_ltlspec = CommandLtlspec(ltl_bmc_verifier,signature.label_mapper);
+      command_safetyspec = CommandSafetyspec(k_induction_verifier,signature.label_mapper);
+      command_trace = CommandTrace(*common_verifier);
+    }
   private:
+    CommandBaseSignature signature;
     ltlBmc ltl_bmc_verifier;
     kInduction k_induction_verifier;
     Verifier *common_verifier = nullptr;

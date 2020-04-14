@@ -19,7 +19,8 @@ class Main {
         printVariables(nusmv);
         printKripke(k);
       }
-      Interpreter interpreter(nusmv.getSymbols(), k, nusmv.getMapping());
+      CommandBase commandBase(nusmv.getSymbols(), k, nusmv.getMapping());
+      Interpreter interpreter(commandBase);
       if(inputOptions->isBatch()) interpreter.setPrinter(PrinterFunctions::batch);
       else interpreter.setPrinter(PrinterFunctions::interactive);
       verifyPropertyInProgram(nusmv,interpreter);
