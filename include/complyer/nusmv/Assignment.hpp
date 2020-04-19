@@ -37,7 +37,7 @@ class Assignment {
         for(auto conNext : conNexts)  {
           clauses.emplace_back(conNext.toFormulaString());
         }
-        T = exactlyOneTrue(clauses);
+        T = exactlyOneTruePb(clauses);
       }
 
       return Kripke(I, T);

@@ -29,6 +29,15 @@ inline std::string exactlyOneTrue(std::vector<std::string> clauses) {
   return form;
 }
 
+inline std::string exactlyOneTruePb(std::vector<std::string> clauses) {
+  std::string form = "";
+  for(int i = 0; i < clauses.size(); ++i) {
+    if(i != clauses.size() - 1) { form = form + clauses[i] + " + "; }
+    else {  form = form + clauses[i] + " == 1 "; } 
+  }
+  return form;
+}
+
 inline std::string allTrue(std::vector<std::string> clauses) {
   std::string form = "";
   for(auto clause : clauses) {
