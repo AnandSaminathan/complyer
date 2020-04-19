@@ -1,112 +1,92 @@
 #include <fstream>
-
+#include <interpreter/PrinterFunctions.h>
 #include "./nusmv/NuSMVListener.h"
 #include "complyer/nusmv/NuSMV.hpp"
 #include "interpreter/Interpreter.h"
+#include "InputOptions.h"
 
 using namespace antlr4;
 
-struct InputOptions {
-  bool interactive;
-  bool verbose;
-  bool input_program_set;
-  std::ifstream input_program_stream;
-  InputOptions(){
-      interactive = false;
-      verbose = false;
-      input_program_set = false;
-  }
+class Main {
+  public:
+    explicit Main(InputOptions &input_options) {
+      inputOptions = &input_options;
+    }
+    void main() {
+      NuSMV nusmv = constructModel();
+      Kripke k = nusmv.toFormula();
+      if(inputOptions->isVerbose()) {
+        printVariables(nusmv);
+        printKripke(k);
+      }
+      Interpreter interpreter(nusmv.getSymbols(), k, nusmv.getMapping());
+      if(inputOptions->isBatch()) interpreter.setPrinter(PrinterFunctions::batch);
+      else interpreter.setPrinter(PrinterFunctions::interactive);
+      verifyPropertyInProgram(nusmv,interpreter);
+      runInteractive(interpreter);
+      runBatch(interpreter);
+    }
+  private:
+    InputOptions *inputOptions;
+    NuSMV constructModel() {
+      ANTLRInputStream input((std::istream &) inputOptions->getInputProgramStream());
+      NuSMVLexer lexer(&input);
+      CommonTokenStream tokens(&lexer);
+      NuSMVParser parser(&tokens);
+
+      tree::ParseTree *tree = parser.nusmv();
+      NuSMVListener listener;
+      tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
+
+      return listener.getNuSMV();
+    }
+    static void printVariables(NuSMV& nusmv) {
+      std::cout << "Variables\n";
+      auto symbols = nusmv.getSymbols();
+      for(auto symbol: symbols) {
+        std::cout  << symbol.getName() << " ";
+      }
+      std:: cout << '\n';
+    }
+    static void printKripke(Kripke &spec){
+      std::cout << "I: " << spec.getI() << '\n';
+      std::cout << "T: " << spec.getT() << '\n';
+    }
+    static void verifyPropertyInProgram(NuSMV &nusmv, Interpreter &interpreter){
+      auto specifications = nusmv.getSpecifications();
+      for(auto specification : specifications) {
+        std::string property;
+        if(specification.getType() == SAFETYSPEC) {
+          property = StringConstants::SAFETYSPEC + " " + specification.getProperty();
+          interpreter.interpret(property);
+        } else {
+          property = StringConstants::BOUND + " " + specification.getBound();
+          interpreter.interpret(property);
+          property = StringConstants::LTLSPEC + " " + specification.getProperty();
+          interpreter.interpret(property);
+        }
+      }
+    }
+    void runInteractive(Interpreter &interpreter){
+      while(inputOptions->isInteractive()){
+        std::string input;
+        std::cout << ">>> ";
+        getline(std::cin,input);
+        interpreter.interpret(input);
+      }
+    }
+    void runBatch(Interpreter &interpreter){
+      if(!inputOptions->isBatch()) return;
+      std::ifstream input_stream(inputOptions->getBatchCommandFile().c_str());
+      for(std::string line;std::getline(input_stream,line);) {
+        interpreter.interpret(line);
+      }
+    }
 };
 
-InputOptions processInput(int argc,char* argv[]){
-  int it = 1;
-  InputOptions inputOptions;
-  while(it < argc){
-    std::string cur(argv[it]);
-    if(cur == "-i" || cur == "--interactive"){
-      inputOptions.interactive = true;
-      it++;
-    } else if(cur == "-v" || cur == "--verbose"){
-      inputOptions.verbose = true;
-      it++;
-    } else {
-      inputOptions.input_program_set = true;
-      inputOptions.input_program_stream.open(cur.c_str());
-      it++;
-    }
-  }
-  if(!inputOptions.input_program_set){
-    throw std::invalid_argument("Program file not specified");
-  }
-  return inputOptions;
-}
-
-NuSMV constructModel(InputOptions &inputOptions) {
-  ANTLRInputStream input(inputOptions.input_program_stream);
-  NuSMVLexer lexer(&input);
-  CommonTokenStream tokens(&lexer);
-  NuSMVParser parser(&tokens);
-
-  tree::ParseTree *tree = parser.nusmv();
-  NuSMVListener listener;
-  tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
-
-  return listener.getNuSMV();
-}
-
-void printVariables(NuSMV& nusmv) {
-  std::cout << "Variables\n";
-  auto symbols = nusmv.getSymbols();
-  for(auto symbol: symbols) {
-    std::cout  << symbol.getName() << " ";
-  }
-  std:: cout << '\n';
-}
-
-void printKripke(Kripke &spec){
-  std::cout << "I: " << spec.getI() << '\n';
-  std::cout << "T: " << spec.getT() << '\n';
-}
-
-void verifyPropertyInProgram(NuSMV &nusmv, Interpreter &interpreter){
-  auto specifications = nusmv.getSpecifications();
-  for(auto specification : specifications) {
-    std::string property;
-    if(specification.getType() == SAFETYSPEC) {
-      property = StringConstants::SAFETYSPEC + " " + specification.getProperty();
-      interpreter.interpret(property);
-    } else {
-      property = StringConstants::BOUND + " " + specification.getBound();
-      interpreter.interpret(property);
-      property = StringConstants::LTLSPEC + " " + specification.getProperty();
-      interpreter.interpret(property);
-    }
-  }
-}
-
-void runInteractive(InputOptions &inputOptions, Interpreter &interpreter){
-  while(inputOptions.interactive){
-    std::string input;
-    std::cout << ">>> ";
-    getline(std::cin,input);
-    interpreter.interpret(input);
-  }
-}
-
 int main(int argc, char* argv[]) {
-  InputOptions inputOptions = processInput(argc,argv);
-  NuSMV nusmv = constructModel(inputOptions);
-  Kripke k = nusmv.toFormula();
-  if(inputOptions.verbose) {
-    printVariables(nusmv);
-    printKripke(k);
-  }
-
-  Interpreter interpreter(nusmv.getSymbols(), k.getI(),
-          k.getT(), nusmv.getMapping());
-  verifyPropertyInProgram(nusmv, interpreter);
-
-  runInteractive(inputOptions, interpreter);
-
+  InputOptions inputOptions(argc,argv);
+  Main main(inputOptions);
+  main.main();
   return 0;
 }

@@ -23,8 +23,11 @@ make
 After building, the tool can be used using.
 
 ```
-./complyer [OPTIONS] <file-name>
+./complyer [-i] [-v] [-b <command-file>] <file-name>
 ```
 #### Options
 - ```-i, --interactive``` : Enable Interaction
 - ```-v, --verbose``` : Descriptive Logs
+- ```-b, --batch``` : Batch process commands
+
+**Note:** Interactive and Batch cannot be enabled simultaneously
