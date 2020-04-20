@@ -8,10 +8,10 @@
 
 class Interpreter {
   CommandBase command_base;
-  std::function<void(CommandResponse,CommandBase&)> print_function;
+  std::function<void(const CommandResponse&,const CommandBase&)> print_function;
 public:
-  explicit Interpreter(CommandBase &commandBase): command_base(commandBase) {}
-  void setPrinter(std::function<void(CommandResponse,CommandBase&)> printer){
+  explicit Interpreter(CommandBase commandBase): command_base(std::move(commandBase)) {}
+  void setPrinter(std::function<void(const CommandResponse&,const CommandBase&)> printer){
     print_function = std::move(printer);
   }
   void interpret(const std::string& input) {
