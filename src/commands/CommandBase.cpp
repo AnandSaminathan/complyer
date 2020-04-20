@@ -5,85 +5,106 @@
 #include <StringConstants.h>
 #include <chrono>
 
-CommandResponse CommandBase::perform(const std::string &line) {
-  CommandInterface *command_interface = nullptr;
-  if(command_quit.parse(line)) {
-    command_interface = &command_quit;
-  } else if(command_bound.parse(line)) {
-    command_interface = &command_bound;
-  } else if(command_length.parse(line)) {
-    command_interface = &command_length;
-  } else if(command_trace.parse(line)) {
-    command_interface = &command_trace;
-  } else if(command_ltlspec.parse(line)) {
-    command_length.setVerifier(&ltl_bmc_verifier);
-    command_trace.setVerifier(&ltl_bmc_verifier);
-    command_interface = &command_ltlspec;
-  } else if(command_safetyspec.parse(line)) {
-    command_length.setVerifier(&k_induction_verifier);
-    command_trace.setVerifier(&k_induction_verifier);
-    command_interface = &command_safetyspec;
+CommandBase::CommandBase(const std::vector<Symbol>& symbols,Kripke kripke,const std::map<std::string,std::string>& labelMapper): signature(symbols, std::move(kripke), labelMapper) {
+  ltl_bmc_verifier = std::make_shared<ltlBmc>(ltlBmc(signature.symbols, signature.kripke.getI(), signature.kripke.getT()));
+  k_induction_verifier = std::make_shared<kInduction>(kInduction(signature.symbols, signature.kripke.getI(), signature.kripke.getT()));
+  command = std::vector<std::shared_ptr<CommandInterface>>(6);
+
+  command[BOUND] = std::make_shared<CommandBound>(CommandBound(command, ltl_bmc_verifier, k_induction_verifier));
+  command[LENGTH] = std::make_shared<CommandLength>(CommandLength(command, ltl_bmc_verifier, k_induction_verifier));
+  command[LTLSPEC] = std::make_shared<CommandLtlspec>(CommandLtlspec(command, ltl_bmc_verifier, k_induction_verifier, signature.label_mapper));
+  command[SAFETYSPEC] = std::make_shared<CommandSafetyspec>(CommandSafetyspec(command, ltl_bmc_verifier, k_induction_verifier, signature.label_mapper));
+  command[TRACE] = std::make_shared<CommandTrace>(CommandTrace(command, ltl_bmc_verifier, k_induction_verifier));
+  command[QUIT] = std::make_shared<CommandQuit>(CommandQuit(command, ltl_bmc_verifier, k_induction_verifier));
+}
+
+CommandResponse CommandBase::perform(const std::string &line) const {
+  std::shared_ptr<CommandInterface> current_command;
+  if(command[QUIT]->parse(line)) {
+    current_command = command[QUIT];
+  } else if(command[BOUND]->parse(line)) {
+    current_command = command[BOUND];
+  } else if(command[LENGTH]->parse(line)) {
+    current_command = command[LENGTH];
+  } else if(command[TRACE]->parse(line)) {
+    current_command = command[TRACE];
+  } else if(command[LTLSPEC]->parse(line)) {
+    command[LENGTH]->setVerifier(ltl_bmc_verifier);
+    command[TRACE]->setVerifier(ltl_bmc_verifier);
+    current_command = command[LTLSPEC];
+  } else if(command[SAFETYSPEC]->parse(line)) {
+    command[LENGTH]->setVerifier(k_induction_verifier);
+    command[TRACE]->setVerifier(k_induction_verifier);
+    current_command = command[SAFETYSPEC];
   } else {
     return CommandResponse(std::string(),0,"Invalid Command",0);
   }
   auto start = std::chrono::high_resolution_clock::now();
-  int result = command_interface->perform();
+  int result = current_command->perform();
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-  return CommandResponse(command_interface->getOperation(),result,command_interface->getMessage(),duration.count());
+  return CommandResponse(current_command->getOperation(),result,current_command->getMessage(),duration.count());
 }
 
-CommandBase::CommandBound::CommandBound(ltlBmc &lB) : CommandInterface(StringConstants::BOUND) {
-  ltl_bmc_verifier = &lB;
+CommandBase::CommandInterface::CommandInterface(std::string op, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
+        : operation(std::move(op)), ltl_bmc_verifier(std::move(lbv)), k_induction_verifier(std::move(kiv)){}
+
+CommandBase::CommandBound::CommandBound(std::vector<std::shared_ptr<CommandInterface>> cmd,
+        std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
+        : CommandInterface(StringConstants::BOUND, std::move(lbv), std::move(kiv)) {
   bound = 100000;
 }
 
 bool CommandBase::CommandBound::parse(std::string line) {
   std::stringstream ss(line);
-  std::string command;
-  ss >> command;
-  std::transform(command.begin(),command.end(),command.begin(),::toupper);
-  if(command != getOperation()) return false;
-  if(ss>>bound) return true;
+  std::string command_prompt;
+  ss >> command_prompt;
+  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
+  if(command_prompt != getOperation()) return false;
+  if(ss >> bound) return true;
   else throw std::invalid_argument("Bound is empty");
 }
 
 int CommandBase::CommandBound::perform() {
-  ltl_bmc_verifier->setBound(bound);
+  this->ltl_bmc_verifier->setBound(bound);
   return int();
 }
 
-CommandBase::CommandLength::CommandLength(Verifier &v)  : CommandInterface(StringConstants::LENGTH) {
-  verifier = &v;
+CommandBase::CommandLength::CommandLength(std::vector<std::shared_ptr<CommandInterface>> cmd,
+        std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
+        : CommandInterface(StringConstants::LENGTH, std::move(lbv), std::move(kiv)) {
+  common_verifier = nullptr;
 }
 
-void CommandBase::CommandLength::setVerifier(Verifier *v) {
-  verifier = v;
+void CommandBase::CommandLength::setVerifier(const std::shared_ptr<Verifier> &v) {
+  common_verifier = v;
 }
 
 bool CommandBase::CommandLength::parse(std::string line) {
   std::stringstream ss(line);
-  std::string command;
-  ss >> command;
-  std::transform(command.begin(),command.end(),command.begin(),::toupper);
-  return (command == getOperation());
+  std::string command_prompt;
+  ss >> command_prompt;
+  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
+  return (command_prompt == getOperation());
 }
 
 int CommandBase::CommandLength::perform() {
-  return verifier->getLength();
+  assert(common_verifier != nullptr);
+  return common_verifier->getLength();
 }
 
-CommandBase::CommandLtlspec::CommandLtlspec(ltlBmc &a,std::map<std::string, std::string> labelMapper)
-  :CommandInterface(StringConstants::LTLSPEC), label_mapper(std::move(labelMapper)) {
-  ltl_bmc_verifier = &a;
-}
+CommandBase::CommandLtlspec::CommandLtlspec(std::vector<std::shared_ptr<CommandInterface>> cmd,
+        std::shared_ptr<ltlBmc> lbv,
+        std::shared_ptr<kInduction> kiv,
+        std::map<std::string, std::string> labelMapper)
+  : CommandInterface(StringConstants::LTLSPEC, lbv, kiv), label_mapper(std::move(labelMapper)) {}
 
 bool CommandBase::CommandLtlspec::parse(std::string line) {
   std::stringstream ss(line);
-  std::string command;
-  ss >> command;
-  std::transform(command.begin(),command.end(),command.begin(),::toupper);
-  if(command != getOperation()) return false;
+  std::string command_prompt;
+  ss >> command_prompt;
+  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
+  if(command_prompt != getOperation()) return false;
   std::getline(ss,property);
   if(property.empty()) throw std::invalid_argument("Property is empty");
   return true;
@@ -98,31 +119,32 @@ int CommandBase::CommandLtlspec::perform() {
   else return NumericConstants::UNSAT;
 }
 
-CommandBase::CommandQuit::CommandQuit():CommandInterface(StringConstants::QUIT) {}
+CommandBase::CommandQuit::CommandQuit(std::vector<std::shared_ptr<CommandInterface>> cmd,
+        std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
+        : CommandInterface(StringConstants::QUIT, lbv, kiv) {}
 
 bool CommandBase::CommandQuit::parse(std::string line) {
   std::stringstream ss(line);
-  std::string command;
-  ss >> command;
-  std::transform(command.begin(),command.end(),command.begin(),::toupper);
-  return (command == getOperation());
+  std::string command_prompt;
+  ss >> command_prompt;
+  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
+  return (command_prompt == getOperation());
 }
 
 int CommandBase::CommandQuit::perform() {
   exit(0);
 }
 
-CommandBase::CommandSafetyspec::CommandSafetyspec(kInduction &a, std::map<std::string, std::string> labelMapper)
-  : CommandInterface(StringConstants::SAFETYSPEC), label_mapper(std::move(labelMapper)) {
-    k_induction_verifier = &a;
-}
+CommandBase::CommandSafetyspec::CommandSafetyspec(std::vector<std::shared_ptr<CommandInterface>> cmd, std::shared_ptr<ltlBmc> lbv,
+        std::shared_ptr<kInduction> kiv, std::map<std::string, std::string> labelMapper)
+        : CommandInterface(StringConstants::SAFETYSPEC, lbv, kiv), label_mapper(std::move(labelMapper)) {}
 
 bool CommandBase::CommandSafetyspec::parse(std::string line) {
   std::stringstream ss(line);
-  std::string command;
-  ss >> command;
-  std::transform(command.begin(),command.end(),command.begin(),::toupper);
-  if(command != getOperation()) return false;
+  std::string command_prompt;
+  ss >> command_prompt;
+  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
+  if(command_prompt != getOperation()) return false;
   std::getline(ss,property);
   if(property.empty()) throw std::invalid_argument("Property is empty");
   return true;
@@ -137,20 +159,23 @@ int CommandBase::CommandSafetyspec::perform() {
   else return NumericConstants::UNSAT;
 }
 
-CommandBase::CommandTrace::CommandTrace(Verifier &v) : CommandInterface(StringConstants::TRACE) {
-  verifier = &v;
+CommandBase::CommandTrace::CommandTrace(std::vector<std::shared_ptr<CommandInterface>> cmd,
+        std::shared_ptr<ltlBmc> lbv,
+        std::shared_ptr<kInduction> kiv)
+        : CommandInterface(StringConstants::TRACE, lbv, kiv) {
+  common_verifier = nullptr;
 }
 
-void CommandBase::CommandTrace::setVerifier(Verifier *v) {
-  verifier = v;
+void CommandBase::CommandTrace::setVerifier(const std::shared_ptr<Verifier> &v) {
+  common_verifier = v;
 }
 
 bool CommandBase::CommandTrace::parse(std::string line) {
   std::stringstream ss(line);
-  std::string command;
-  ss >> command;
-  std::transform(command.begin(),command.end(),command.begin(),::toupper);
-  return (command == getOperation());
+  std::string command_prompt;
+  ss >> command_prompt;
+  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
+  return (command_prompt == getOperation());
 }
 
 int CommandBase::CommandTrace::perform() {
@@ -159,6 +184,6 @@ int CommandBase::CommandTrace::perform() {
 
 std::string CommandBase::CommandTrace::getMessage() {
   std::stringstream ss;
-  ss << verifier->getTrace();
+  ss << common_verifier->getTrace();
   return ss.str();
 }
