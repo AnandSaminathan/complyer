@@ -10,12 +10,14 @@ CommandBase::CommandBase(const std::vector<Symbol>& symbols,Kripke kripke,const 
   k_induction_verifier = std::make_shared<kInduction>(kInduction(signature.symbols, signature.kripke.getI(), signature.kripke.getT()));
   command = std::vector<std::shared_ptr<CommandInterface>>(6);
 
-  command[BOUND] = std::make_shared<CommandBound>(CommandBound(command, ltl_bmc_verifier, k_induction_verifier));
-  command[LENGTH] = std::make_shared<CommandLength>(CommandLength(command, ltl_bmc_verifier, k_induction_verifier));
-  command[LTLSPEC] = std::make_shared<CommandLtlspec>(CommandLtlspec(command, ltl_bmc_verifier, k_induction_verifier, signature.label_mapper));
-  command[SAFETYSPEC] = std::make_shared<CommandSafetyspec>(CommandSafetyspec(command, ltl_bmc_verifier, k_induction_verifier, signature.label_mapper));
-  command[TRACE] = std::make_shared<CommandTrace>(CommandTrace(command, ltl_bmc_verifier, k_induction_verifier));
-  command[QUIT] = std::make_shared<CommandQuit>(CommandQuit(command, ltl_bmc_verifier, k_induction_verifier));
+  command[BOUND] = std::make_shared<CommandBound>(CommandBound(ltl_bmc_verifier, k_induction_verifier));
+  command[LENGTH] = std::make_shared<CommandLength>(CommandLength(ltl_bmc_verifier, k_induction_verifier));
+  command[LTLSPEC] = std::make_shared<CommandLtlspec>(CommandLtlspec(ltl_bmc_verifier, k_induction_verifier,
+                                                                     signature.label_mapper));
+  command[SAFETYSPEC] = std::make_shared<CommandSafetyspec>(CommandSafetyspec(ltl_bmc_verifier, k_induction_verifier,
+                                                                              signature.label_mapper));
+  command[TRACE] = std::make_shared<CommandTrace>(CommandTrace(ltl_bmc_verifier, k_induction_verifier));
+  command[QUIT] = std::make_shared<CommandQuit>(CommandQuit(ltl_bmc_verifier, k_induction_verifier));
 }
 
 CommandResponse CommandBase::perform(const std::string &line) const {
@@ -49,8 +51,7 @@ CommandResponse CommandBase::perform(const std::string &line) const {
 CommandBase::CommandInterface::CommandInterface(std::string op, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
         : operation(std::move(op)), ltl_bmc_verifier(std::move(lbv)), k_induction_verifier(std::move(kiv)){}
 
-CommandBase::CommandBound::CommandBound(std::vector<std::shared_ptr<CommandInterface>> cmd,
-        std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
+CommandBase::CommandBound::CommandBound(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
         : CommandInterface(StringConstants::BOUND, std::move(lbv), std::move(kiv)) {
   bound = 100000;
 }
@@ -70,8 +71,7 @@ int CommandBase::CommandBound::perform() {
   return int();
 }
 
-CommandBase::CommandLength::CommandLength(std::vector<std::shared_ptr<CommandInterface>> cmd,
-        std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
+CommandBase::CommandLength::CommandLength(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
         : CommandInterface(StringConstants::LENGTH, std::move(lbv), std::move(kiv)) {
   common_verifier = nullptr;
 }
@@ -93,10 +93,8 @@ int CommandBase::CommandLength::perform() {
   return common_verifier->getLength();
 }
 
-CommandBase::CommandLtlspec::CommandLtlspec(std::vector<std::shared_ptr<CommandInterface>> cmd,
-        std::shared_ptr<ltlBmc> lbv,
-        std::shared_ptr<kInduction> kiv,
-        std::map<std::string, std::string> labelMapper)
+CommandBase::CommandLtlspec::CommandLtlspec(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv,
+                                            std::map<std::string, std::string> labelMapper)
   : CommandInterface(StringConstants::LTLSPEC, lbv, kiv), label_mapper(std::move(labelMapper)) {}
 
 bool CommandBase::CommandLtlspec::parse(std::string line) {
@@ -119,8 +117,7 @@ int CommandBase::CommandLtlspec::perform() {
   else return NumericConstants::UNSAT;
 }
 
-CommandBase::CommandQuit::CommandQuit(std::vector<std::shared_ptr<CommandInterface>> cmd,
-        std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
+CommandBase::CommandQuit::CommandQuit(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
         : CommandInterface(StringConstants::QUIT, lbv, kiv) {}
 
 bool CommandBase::CommandQuit::parse(std::string line) {
@@ -135,8 +132,8 @@ int CommandBase::CommandQuit::perform() {
   exit(0);
 }
 
-CommandBase::CommandSafetyspec::CommandSafetyspec(std::vector<std::shared_ptr<CommandInterface>> cmd, std::shared_ptr<ltlBmc> lbv,
-        std::shared_ptr<kInduction> kiv, std::map<std::string, std::string> labelMapper)
+CommandBase::CommandSafetyspec::CommandSafetyspec(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv,
+                                                  std::map<std::string, std::string> labelMapper)
         : CommandInterface(StringConstants::SAFETYSPEC, lbv, kiv), label_mapper(std::move(labelMapper)) {}
 
 bool CommandBase::CommandSafetyspec::parse(std::string line) {
@@ -159,9 +156,7 @@ int CommandBase::CommandSafetyspec::perform() {
   else return NumericConstants::UNSAT;
 }
 
-CommandBase::CommandTrace::CommandTrace(std::vector<std::shared_ptr<CommandInterface>> cmd,
-        std::shared_ptr<ltlBmc> lbv,
-        std::shared_ptr<kInduction> kiv)
+CommandBase::CommandTrace::CommandTrace(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
         : CommandInterface(StringConstants::TRACE, lbv, kiv) {
   common_verifier = nullptr;
 }

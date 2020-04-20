@@ -44,7 +44,7 @@ class CommandBase {
     };
     class CommandBound : public CommandInterface {
       public:
-        CommandBound(std::vector<std::shared_ptr<CommandInterface>> cmd, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv);
+        CommandBound(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv);
         bool parse(std::string line) override;
         int perform() override;
       private:
@@ -52,14 +52,15 @@ class CommandBase {
     };
     class CommandLength : public CommandInterface {
       public:
-        CommandLength(std::vector<std::shared_ptr<CommandInterface>> cmd, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv);
+        CommandLength(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv);
         void setVerifier(const std::shared_ptr<Verifier> &v) override;
         bool parse(std::string line) override;
         int perform() override;
     };
     class CommandLtlspec : public CommandInterface {
       public:
-        CommandLtlspec(std::vector<std::shared_ptr<CommandInterface>> cmd, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv, std::map<std::string, std::string> labelMapper);
+        CommandLtlspec(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv,
+                       std::map<std::string, std::string> labelMapper);
         bool parse(std::string line) override;
         int perform() override;
       private:
@@ -68,13 +69,14 @@ class CommandBase {
     };
     class CommandQuit : public CommandInterface {
       public:
-        CommandQuit(std::vector<std::shared_ptr<CommandInterface>> cmd, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv);
+        CommandQuit(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv);
         bool parse(std::string line) override;
         int perform() override;
     };
     class CommandSafetyspec : public CommandInterface {
       public:
-        CommandSafetyspec(std::vector<std::shared_ptr<CommandInterface>> cmd, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv, std::map<std::string, std::string> labelMapper);
+        CommandSafetyspec(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv,
+                          std::map<std::string, std::string> labelMapper);
         bool parse(std::string line) override;
         int perform() override;
       private:
@@ -83,7 +85,7 @@ class CommandBase {
     };
     class CommandTrace : public CommandInterface {
       public:
-        CommandTrace(std::vector<std::shared_ptr<CommandInterface>> cmd, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv);
+        CommandTrace(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv);
         void setVerifier(const std::shared_ptr<Verifier> &v) override;
         bool parse(std::string line) override;
         int perform() override;
