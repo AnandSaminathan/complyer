@@ -6,7 +6,7 @@
 #include <NumericConstants.h>
 
 namespace PrinterFunctions {
-  void interactive(const CommandResponse &command_response, const CommandBase &command_base) {
+  void interactive(CommandResponse command_response, CommandBase command_base) {
     if(command_response.getOperation() == StringConstants::QUIT or command_response.getOperation() == StringConstants::BOUND) {}
     else if(command_response.getOperation() == StringConstants::SAFETYSPEC or command_response.getOperation() == StringConstants::LTLSPEC) {
       if(command_response.getResult() == NumericConstants::SAT) {
@@ -25,7 +25,7 @@ namespace PrinterFunctions {
     }
   }
 
-  void batch(const CommandResponse &command_response, const CommandBase &command_base) {
+  void batch(CommandResponse command_response, CommandBase command_base) {
     if(command_response.getOperation() == StringConstants::LTLSPEC or command_response.getOperation() == StringConstants::SAFETYSPEC) {
       CommandResponse length_response = command_base.perform(StringConstants::LENGTH);
       if(command_response.getResult() == NumericConstants::SAT) {
