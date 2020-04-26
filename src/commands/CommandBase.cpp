@@ -1,184 +1,139 @@
 #include "CommandBase.h"
 
 #include <utility>
-#include <NumericConstants.h>
-#include <StringConstants.h>
+#include <algorithm>
 #include <chrono>
+#include <NumericConstants.h>
 
-CommandBase::CommandBase(const std::vector<Symbol>& symbols,Kripke kripke,const std::map<std::string,std::string>& labelMapper): signature(symbols, std::move(kripke), labelMapper) {
-  ltl_bmc_verifier = std::make_shared<ltlBmc>(ltlBmc(signature.symbols, signature.kripke.getI(), signature.kripke.getT()));
-  k_induction_verifier = std::make_shared<kInduction>(kInduction(signature.symbols, signature.kripke.getI(), signature.kripke.getT()));
-  command = std::vector<std::shared_ptr<CommandInterface>>(6);
-
-  command[BOUND] = std::make_shared<CommandBound>(CommandBound(ltl_bmc_verifier, k_induction_verifier));
-  command[LENGTH] = std::make_shared<CommandLength>(CommandLength(ltl_bmc_verifier, k_induction_verifier));
-  command[LTLSPEC] = std::make_shared<CommandLtlspec>(CommandLtlspec(ltl_bmc_verifier, k_induction_verifier,
-                                                                     signature.label_mapper));
-  command[SAFETYSPEC] = std::make_shared<CommandSafetyspec>(CommandSafetyspec(ltl_bmc_verifier, k_induction_verifier,
-                                                                              signature.label_mapper));
-  command[TRACE] = std::make_shared<CommandTrace>(CommandTrace(ltl_bmc_verifier, k_induction_verifier));
-  command[QUIT] = std::make_shared<CommandQuit>(CommandQuit(ltl_bmc_verifier, k_induction_verifier));
+CommandBase::CommandBase(ModelSpecification m): model(m) {
+  verifier = std::make_shared<Verifiers>(Verifiers(m.getSymbols(), m.getKripke()));
+  command = std::make_shared<Commands>(Commands(verifier, m.getLabelMapper()));
 }
 
-CommandResponse CommandBase::perform(const std::string &line) const {
-  std::shared_ptr<CommandInterface> current_command;
-  if(command[QUIT]->parse(line)) {
-    current_command = command[QUIT];
-  } else if(command[BOUND]->parse(line)) {
-    current_command = command[BOUND];
-  } else if(command[LENGTH]->parse(line)) {
-    current_command = command[LENGTH];
-  } else if(command[TRACE]->parse(line)) {
-    current_command = command[TRACE];
-  } else if(command[LTLSPEC]->parse(line)) {
-    command[LENGTH]->setVerifier(ltl_bmc_verifier);
-    command[TRACE]->setVerifier(ltl_bmc_verifier);
-    current_command = command[LTLSPEC];
-  } else if(command[SAFETYSPEC]->parse(line)) {
-    command[LENGTH]->setVerifier(k_induction_verifier);
-    command[TRACE]->setVerifier(k_induction_verifier);
-    current_command = command[SAFETYSPEC];
-  } else {
-    return CommandResponse(std::string(),0,"Invalid Command",0);
+CommandResponse CommandBase::perform(const std::string &line) {
+  if(command->quit->parse(line)) return command->quit->perform();
+  if(command->trace->parse(line)) return command->trace->perform();
+  if(command->length->parse(line)) return command->length->perform();
+  if(command->bound->parse(line)) return command->bound->perform();
+  if(command->safetyspec->parse(line)){
+    command->length->setVerifier(verifier->k_induction_verifier);
+    command->trace->setVerifier(verifier->k_induction_verifier);
+    return command->safetyspec->perform();
   }
-  auto start = std::chrono::high_resolution_clock::now();
-  int result = current_command->perform();
-  auto stop = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-  return CommandResponse(current_command->getOperation(),result,current_command->getMessage(),duration.count());
+  if(command->ltlspec->parse(line)){
+    command->length->setVerifier(verifier->ltl_bmc_verifier);
+    command->trace->setVerifier(verifier->ltl_bmc_verifier);
+    return command->ltlspec->perform();
+  }
+  return CommandResponse(std::string(), int(), "Invalid Command", long());
 }
 
-CommandBase::CommandInterface::CommandInterface(std::string op, std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
-        : operation(std::move(op)), ltl_bmc_verifier(std::move(lbv)), k_induction_verifier(std::move(kiv)){}
-
-CommandBase::CommandBound::CommandBound(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
-        : CommandInterface(StringConstants::BOUND, std::move(lbv), std::move(kiv)) {
-  bound = 100000;
+bool CommandBase::CommandInterface::parse(const std::string &line) {
+  std::stringstream stream(line);
+  std::string current_command;
+  stream >> current_command;
+  std::transform(current_command.begin(), current_command.end(), current_command.begin(), ::toupper);
+  return current_command == this->getOperation();
 }
 
-bool CommandBase::CommandBound::parse(std::string line) {
-  std::stringstream ss(line);
-  std::string command_prompt;
-  ss >> command_prompt;
-  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
-  if(command_prompt != getOperation()) return false;
-  if(ss >> bound) return true;
-  else throw std::invalid_argument("Bound is empty");
-}
-
-int CommandBase::CommandBound::perform() {
-  this->ltl_bmc_verifier->setBound(bound);
-  return int();
-}
-
-CommandBase::CommandLength::CommandLength(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
-        : CommandInterface(StringConstants::LENGTH, std::move(lbv), std::move(kiv)) {
-  common_verifier = nullptr;
-}
-
-void CommandBase::CommandLength::setVerifier(const std::shared_ptr<Verifier> &v) {
-  common_verifier = v;
-}
-
-bool CommandBase::CommandLength::parse(std::string line) {
-  std::stringstream ss(line);
-  std::string command_prompt;
-  ss >> command_prompt;
-  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
-  return (command_prompt == getOperation());
-}
-
-int CommandBase::CommandLength::perform() {
-  assert(common_verifier != nullptr);
-  return common_verifier->getLength();
-}
-
-CommandBase::CommandLtlspec::CommandLtlspec(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv,
-                                            std::map<std::string, std::string> labelMapper)
-  : CommandInterface(StringConstants::LTLSPEC, lbv, kiv), label_mapper(std::move(labelMapper)) {}
-
-bool CommandBase::CommandLtlspec::parse(std::string line) {
-  std::stringstream ss(line);
-  std::string command_prompt;
-  ss >> command_prompt;
-  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
-  if(command_prompt != getOperation()) return false;
-  std::getline(ss,property);
-  if(property.empty()) throw std::invalid_argument("Property is empty");
-  return true;
-}
-
-int CommandBase::CommandLtlspec::perform() {
-  FormulaTree tree(property);
-  tree.substitute(this->label_mapper);
-  property = tree.getFormula();
-  bool res = ltl_bmc_verifier->check(property);
-  if(res) return NumericConstants::SAT;
-  else return NumericConstants::UNSAT;
-}
-
-CommandBase::CommandQuit::CommandQuit(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
-        : CommandInterface(StringConstants::QUIT, lbv, kiv) {}
-
-bool CommandBase::CommandQuit::parse(std::string line) {
-  std::stringstream ss(line);
-  std::string command_prompt;
-  ss >> command_prompt;
-  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
-  return (command_prompt == getOperation());
-}
-
-int CommandBase::CommandQuit::perform() {
+CommandResponse CommandBase::CommandQuit::perform() {
   exit(0);
 }
 
-CommandBase::CommandSafetyspec::CommandSafetyspec(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv,
-                                                  std::map<std::string, std::string> labelMapper)
-        : CommandInterface(StringConstants::SAFETYSPEC, lbv, kiv), label_mapper(std::move(labelMapper)) {}
+CommandResponse CommandBase::CommandTrace::perform() {
+  assert(common_verifier != nullptr);
+  // TODO: If no trace, must return "No error" instead of assert failure
+  auto start = std::chrono::high_resolution_clock::now();
+  std::stringstream stream;
+  stream << common_verifier->getTrace();
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  return CommandResponse(this->getOperation(), 1, stream.str(), duration.count());
+}
 
-bool CommandBase::CommandSafetyspec::parse(std::string line) {
-  std::stringstream ss(line);
-  std::string command_prompt;
-  ss >> command_prompt;
-  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
-  if(command_prompt != getOperation()) return false;
-  std::getline(ss,property);
-  if(property.empty()) throw std::invalid_argument("Property is empty");
+void CommandBase::CommandTrace::setVerifier(std::shared_ptr<Verifier> v) {
+  common_verifier = std::move(v);
+}
+
+CommandResponse CommandBase::CommandLength::perform() {
+  assert(common_verifier != nullptr);
+  auto start = std::chrono::high_resolution_clock::now();
+  int result = common_verifier->getLength();
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  return CommandResponse(this->getOperation(), result, std::to_string(result), duration.count());
+}
+
+void CommandBase::CommandLength::setVerifier(std::shared_ptr<Verifier> v) {
+  common_verifier = std::move(v);
+}
+
+bool CommandBase::CommandSafetyspec::parse(const std::string &line) {
+  if(!CommandInterface::parse(line)) return false;
+  std::stringstream stream(line);
+  std::string cmd; stream >> cmd;
+  std::getline(stream, this->property);
   return true;
 }
 
-int CommandBase::CommandSafetyspec::perform() {
-  FormulaTree tree(property);
+CommandResponse CommandBase::CommandSafetyspec::perform() {
+  auto start = std::chrono::high_resolution_clock::now();
+  FormulaTree tree(this->property);
   tree.substitute(this->label_mapper);
-  property = tree.getFormula();
-  bool res = k_induction_verifier->check(property);
-  if(res) return NumericConstants::SAT;
-  else return NumericConstants::UNSAT;
+  this->property = tree.getFormula();
+  int result = k_induction_verifier->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  std::string result_string = result == NumericConstants::SAT ? "SAT" : "UNSAT";
+  return CommandResponse(getOperation(), result, result_string, duration.count());
 }
 
-CommandBase::CommandTrace::CommandTrace(std::shared_ptr<ltlBmc> lbv, std::shared_ptr<kInduction> kiv)
-        : CommandInterface(StringConstants::TRACE, lbv, kiv) {
-  common_verifier = nullptr;
+bool CommandBase::CommandBound::parse(const std::string &line) {
+  if(!CommandInterface::parse(line)) return false;
+  std::stringstream stream(line);
+  std::string cmd; stream >> cmd;
+  stream >> bound;
+  return true;
 }
 
-void CommandBase::CommandTrace::setVerifier(const std::shared_ptr<Verifier> &v) {
-  common_verifier = v;
+CommandResponse CommandBase::CommandBound::perform() {
+  auto start = std::chrono::high_resolution_clock::now();
+  ltl_bmc_verifier->setBound(bound);
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  return CommandResponse(getOperation(), bound, "Set " + std::to_string(bound), duration.count());
 }
 
-bool CommandBase::CommandTrace::parse(std::string line) {
-  std::stringstream ss(line);
-  std::string command_prompt;
-  ss >> command_prompt;
-  std::transform(command_prompt.begin(), command_prompt.end(), command_prompt.begin(), ::toupper);
-  return (command_prompt == getOperation());
+bool CommandBase::CommandLtlspec::parse(const std::string &line) {
+  if(!CommandInterface::parse(line)) return false;
+  std::stringstream stream(line);
+  std::string cmd; stream >> cmd;
+  std::getline(stream, property);
+  return true;
 }
 
-int CommandBase::CommandTrace::perform() {
-  return int();
+CommandResponse CommandBase::CommandLtlspec::perform() {
+  auto start = std::chrono::high_resolution_clock::now();
+  FormulaTree tree(this->property);
+  tree.substitute(this->label_mapper);
+  this->property = tree.getFormula();
+  int result = ltl_bmc_verifier->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  std::string result_string = result == NumericConstants::SAT ? "SAT" : "UNSAT";
+  return CommandResponse(getOperation(), result, result_string, duration.count());
 }
 
-std::string CommandBase::CommandTrace::getMessage() {
-  std::stringstream ss;
-  ss << common_verifier->getTrace();
-  return ss.str();
+CommandBase::Commands::Commands(const std::shared_ptr<Verifiers> &verifier, const std::map<std::string, std::string> &labelMapper) {
+  quit = std::make_shared<CommandQuit>(CommandQuit());
+  trace = std::make_shared<CommandTrace>(CommandTrace());
+  length = std::make_shared<CommandLength>(CommandLength());
+  safetyspec = std::make_shared<CommandSafetyspec>(CommandSafetyspec(verifier->k_induction_verifier, labelMapper));
+  bound = std::make_shared<CommandBound>(CommandBound(verifier->ltl_bmc_verifier));
+  ltlspec = std::make_shared<CommandLtlspec>(CommandLtlspec(verifier->ltl_bmc_verifier, labelMapper));
+}
+
+CommandBase::Verifiers::Verifiers(const std::vector<Symbol> &symbols, Kripke kripke) {
+  ltl_bmc_verifier = std::make_shared<ltlBmc>(ltlBmc(symbols, kripke.getI(), kripke.getT()));
+  k_induction_verifier = std::make_shared<kInduction>(kInduction(symbols, kripke.getI(), kripke.getT()));
 }

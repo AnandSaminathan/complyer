@@ -1,7 +1,6 @@
 #include <fstream>
 #include <interpreter/PrinterFunctions.h>
 #include "./nusmv/NuSMVListener.h"
-#include "complyer/nusmv/NuSMV.hpp"
 #include "interpreter/Interpreter.h"
 #include "InputOptions.h"
 
@@ -19,7 +18,7 @@ class Main {
         printVariables(nusmv);
         printKripke(k);
       }
-      CommandBase commandBase(nusmv.getSymbols(), k, nusmv.getMapping());
+      CommandBase commandBase(ModelSpecification(nusmv.getSymbols(), k, nusmv.getMapping()));
       Interpreter interpreter(commandBase);
       if(inputOptions->isBatch()) interpreter.setPrinter(PrinterFunctions::batch);
       else interpreter.setPrinter(PrinterFunctions::interactive);
