@@ -51,7 +51,8 @@ file(GLOB SOURCE ${PROJECT_SOURCE_DIR}/src/*.cpp
 
 add_library(command_base SHARED ${PROJECT_SOURCE_DIR}/src/commands/CommandBase.h
         ${PROJECT_SOURCE_DIR}/src/commands/CommandBase.cpp
-        ${PROJECT_SOURCE_DIR}/src/commands/CommandResponse.h)
+        ${PROJECT_SOURCE_DIR}/src/commands/CommandResponse.h
+        ${PROJECT_SOURCE_DIR}/src/commands/ModelSpecification.h)
 
 target_link_libraries(command_base ${PROJECT_SOURCE_DIR}/libs/libz3.so)
 target_link_libraries(command_base ${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so)
