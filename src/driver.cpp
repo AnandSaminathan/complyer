@@ -4,6 +4,11 @@
 #include "interpreter/Interpreter.h"
 #include "InputOptions.h"
 
+#ifdef COMPLYER_USE_READLINE
+  #include "complyer/util/io/io.hpp"
+#endif
+
+
 using namespace antlr4;
 
 class Main {
@@ -68,12 +73,22 @@ class Main {
       }
     }
     void runInteractive(Interpreter &interpreter){
-      while(inputOptions->isInteractive()){
-        std::string input;
-        std::cout << ">>> ";
-        getline(std::cin,input);
-        interpreter.interpret(input);
-      }
+      #ifdef COMPLYER_USE_READLINE
+        std::cout << "using readline\n";
+        IO io;
+        while(inputOptions->isInteractive()){
+          std::string input = io.getline();
+          interpreter.interpret(input);
+        }
+      #else
+        std::cout << "not using readline\n";
+        while(inputOptions->isInteractive()){
+          std::string input;
+          std::cout << ">>> ";
+          getline(std::cin,input);
+          interpreter.interpret(input);
+        }
+      #endif
     }
     void runBatch(Interpreter &interpreter){
       if(!inputOptions->isBatch()) return;

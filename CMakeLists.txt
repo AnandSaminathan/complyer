@@ -5,6 +5,8 @@ project(smv)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+option(COMPLYER_DISABLE_READLINE "Do not use GNU Readline library if available" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-Wdeprecated -Wno-attributes" )
 
@@ -23,11 +25,11 @@ set(ANTLR4_WITH_STATIC_CRT OFF)
 set(ANTLR_EXECUTABLE ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.7.2-complete.jar)
 
 include(ExternalAntlr4Cpp)
+include(FindReadline)
 
 include_directories(${ANTLR4_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/src/)
-
 
 find_package(ANTLR REQUIRED)
 
@@ -66,3 +68,17 @@ add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp
 
 target_link_libraries(complyer antlr4_shared)
 target_link_libraries(complyer command_base)
+
+if(NOT COMPLYER_DISABLE_READLINE) 
+  find_package(Readline)
+  if(READLINE_FOUND) 
+    set(COMPLYER_USE_READLINE ON)
+    include_directories(${READLINE_INCLUDE_DIR})
+    target_link_libraries(complyer ${READLINE_LIBRARY})
+    target_link_libraries(complyer -ltinfo)
+    if(WITH_TEST)
+      add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
+    endif(WITH_TEST)
+  endif()
+endif()
+
