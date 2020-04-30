@@ -74,14 +74,12 @@ class Main {
     }
     void runInteractive(Interpreter &interpreter){
       #ifdef COMPLYER_USE_READLINE
-        std::cout << "using readline\n";
         IO io;
         while(inputOptions->isInteractive()){
           std::string input = io.getline();
           interpreter.interpret(input);
         }
       #else
-        std::cout << "not using readline\n";
         while(inputOptions->isInteractive()){
           std::string input;
           std::cout << ">>> ";
