@@ -47,8 +47,13 @@ CommandResponse CommandBase::CommandTrace::perform() {
   std::stringstream stream;
   auto trace = common_verifier->getTrace();
   auto states = trace.getStates();
+  auto symbols = trace.getSymbols();
   for(auto state: states) {
-    
+    int vars = symbols.size();
+    for(int i = 0; i < vars; ++i) {
+      stream << symbols[i] << " = " << state[i] << "\n";
+    }
+    stream << '\n';
   }
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
