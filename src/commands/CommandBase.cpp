@@ -45,7 +45,11 @@ CommandResponse CommandBase::CommandTrace::perform() {
   // TODO: If no trace, must return "No error" instead of assert failure
   auto start = std::chrono::high_resolution_clock::now();
   std::stringstream stream;
-  stream << common_verifier->getTrace();
+  auto trace = common_verifier->getTrace();
+  auto states = trace.getStates();
+  for(auto state: states) {
+    
+  }
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
   return CommandResponse(this->getOperation(), 1, stream.str(), duration.count());
