@@ -10,13 +10,22 @@ class IO {
 
     IO() {  }
     
-    std::string getline() {
-      const char* line = readline(">>> ");
-      if(line == nullptr) { exit(0); }
-      if(*line) add_history(line);
-      std::string ret(line);
-      free( (void*) line);
-      return ret;
-    } 
+    #ifdef COMPLYER_USE_READLINE
+      std::string getline() {
+        const char* line = readline(">>> ");
+        if(line == nullptr) { exit(0); }
+        if(*line) add_history(line);
+        std::string ret(line);
+        free( (void*) line);
+        return ret;
+      }
+    #else
+      std::string getline() {
+        std::string line;
+        std::cout << ">>> ";
+        std::getline(std::cin, line);
+        return line;
+      }
+    #endif
 };
 

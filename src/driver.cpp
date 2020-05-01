@@ -3,10 +3,7 @@
 #include "./nusmv/NuSMVListener.h"
 #include "interpreter/Interpreter.h"
 #include "InputOptions.h"
-
-#ifdef COMPLYER_USE_READLINE
-  #include "complyer/util/io/io.hpp"
-#endif
+#include "complyer/util/io/io.hpp"
 
 
 using namespace antlr4;
@@ -73,20 +70,11 @@ class Main {
       }
     }
     void runInteractive(Interpreter &interpreter){
-      #ifdef COMPLYER_USE_READLINE
         IO io;
         while(inputOptions->isInteractive()){
           std::string input = io.getline();
           interpreter.interpret(input);
         }
-      #else
-        while(inputOptions->isInteractive()){
-          std::string input;
-          std::cout << ">>> ";
-          getline(std::cin,input);
-          interpreter.interpret(input);
-        }
-      #endif
     }
     void runBatch(Interpreter &interpreter){
       if(!inputOptions->isBatch()) return;
