@@ -24,6 +24,7 @@ class IO {
         std::string line;
         std::cout << ">>> ";
         std::getline(std::cin, line);
+        if(std::cin.eof()) { exit(0); }
         return line;
       }
     #endif
