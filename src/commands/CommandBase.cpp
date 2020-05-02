@@ -42,22 +42,27 @@ CommandResponse CommandBase::CommandQuit::perform() {
 
 CommandResponse CommandBase::CommandTrace::perform() {
   assert(common_verifier != nullptr);
-  // TODO: If no trace, must return "No error" instead of assert failure
-  auto start = std::chrono::high_resolution_clock::now();
-  std::stringstream stream;
-  auto trace = common_verifier->getTrace();
-  auto states = trace.getStates();
-  auto symbols = trace.getSymbols();
-  for(auto state: states) {
-    int vars = symbols.size();
-    for(int i = 0; i < vars; ++i) {
-      stream << symbols[i] << " = " << state[i] << "\n";
+  try {
+    auto start = std::chrono::high_resolution_clock::now();
+    std::stringstream stream;
+    auto trace = common_verifier->getTrace();
+    auto states = trace.getStates();
+    auto symbols = trace.getSymbols();
+    for(int j=0; j<states.size();j++) {
+      auto state = states[j];
+      int vars = symbols.size();
+      stream << "State " << j+1;
+      for(int i = 0; i < vars; ++i) {
+        stream << "\t" << symbols[i] << " = " << state[i] << "\n";
+      }
+      stream << '\n';
     }
-    stream << '\n';
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    return CommandResponse(this->getOperation(), 1, stream.str(), duration.count());
+  } catch (std::exception &e) {
+    return CommandResponse(this->getOperation(), 0, e.what(), 0);
   }
-  auto stop = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-  return CommandResponse(this->getOperation(), 1, stream.str(), duration.count());
 }
 
 void CommandBase::CommandTrace::setVerifier(std::shared_ptr<Verifier> v) {
