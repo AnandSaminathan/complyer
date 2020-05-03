@@ -70,9 +70,8 @@ class Main {
       }
     }
     void runInteractive(Interpreter &interpreter){
-        IO io;
-        while(inputOptions->isInteractive()){
-          std::string input = io.getline();
+      while(inputOptions->isInteractive()){
+          std::string input = IO::getline();
           interpreter.interpret(input);
         }
     }

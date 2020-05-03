@@ -2,16 +2,18 @@
 
 #include <string>
 
-#include "readline/readline.h"
-#include "readline/history.h"
+#ifdef COMPLYER_USE_READLINE
+  #include "readline/readline.h"
+  #include "readline/history.h"
+#endif
 
 class IO {
   public:
 
-    IO() {  }
+    IO() = default;
     
     #ifdef COMPLYER_USE_READLINE
-      std::string getline() {
+      static std::string getline() {
         const char* line = readline(">>> ");
         if(line == nullptr) { exit(0); }
         if(*line) add_history(line);
@@ -20,7 +22,7 @@ class IO {
         return ret;
       }
     #else
-      std::string getline() {
+      static std::string getline() {
         std::string line;
         std::cout << ">>> ";
         std::getline(std::cin, line);
