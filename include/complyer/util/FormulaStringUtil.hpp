@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "formula-tree/formula-tree.h"
 
 inline std::string nextId(std::string id) { return "next_" + id; }
 inline std::string land(std::string op1, std::string op2) { return (op1 + " && " + op2); }
@@ -46,3 +47,13 @@ inline std::string allTrue(std::vector<std::string> clauses) {
   } 
   return form;
 }
+
+
+inline std::string substitute(std::string formula, std::map<std::string, std::string> mapper) {
+  if(mapper.size() == 0) { return formula; }
+  FormulaTree tree(formula);
+  tree.substitute(mapper);
+  return tree.getFormula();
+}
+
+

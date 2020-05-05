@@ -4,6 +4,7 @@
 #include "Assignment.hpp"
 #include "Definition.hpp"
 #include "verification-algorithms/common/symbol.hpp"
+#include "complyer/util/SymbolTable.hpp"
 
 class Module {
   public:
@@ -14,6 +15,17 @@ class Module {
 
     inline void setParameters(std::vector<std::string> parameters) { 
       (this->parameters).emplace(parameters); 
+    }
+
+    inline void setActualParameters(std::vector<std::string> actualParameters) {
+      assert((*parameters).size() == actualParameters.size());
+      (this->actualParameters).emplace(actualParameters);
+    }
+
+    inline void setVariablePrefix(std::string prefix) {
+      for(auto& symbol: symbols) {
+        symbol.setName(prefix + "." + symbol.getName());
+      }
     }
 
     inline void setAssignment(Assignment assignment) { 
@@ -29,7 +41,7 @@ class Module {
     }
 
     inline void addSymbol(Symbol symbol) {
-      symbols.emplace_back(symbol);
+      symbolTable.addSymbol(symbol.getName(), symbol);
     }
 
     inline void addDefinition(Definition definition) {
@@ -41,7 +53,7 @@ class Module {
     inline std::optional<Assignment> getAssignment() { return assignment; }
     inline std::optional<std::string> getInit() { return init; }
     inline std::optional<std::string> getTrans() { return trans; }
-    inline std::vector<Symbol> getSymbols() { return symbols; }
+    inline std::vector<Symbol> getSymbols() { return symbolTable.getSymbols(); }
 
     Kripke toFormula() {
       std::string I = "";
@@ -49,8 +61,20 @@ class Module {
 
       assert(!(assignment && init) && !(assignment && trans));
 
-      if(init) { return Kripke(*init, *trans); }
-      else { return assignment->toFormula(); } 
+      std::map<std::string, std::string> mapper;
+      for(int i = 0; i < (*parameters).size(); ++i) { mapper[(*parameters)[i]] = (*actualParameters)[i]; }
+      for(auto definition : definitions) { mapper[definition.getId()] = definition.getDefinition(); }
+      
+      if(init) { 
+        (*init) = substitute((*init), mapper);
+        (*trans) = substitute((*trans), mapper);
+        return Kripke(*init, *trans); 
+      } else { 
+        Kripke kripke = assignment->toFormula();
+        kripke.setI(substitute(kripke.getI(), mapper));
+        kripke.setT(substitute(kripke.getT(), mapper));
+        return kripke;
+      } 
     }
 
     std::map<std::string, std::string> getMapping() {
@@ -65,8 +89,8 @@ class Module {
   private:
 
     std::string name;
-    std::optional<std::vector<std::string>> parameters;
-    std::vector<Symbol> symbols;
+    std::optional<std::vector<std::string>> parameters, actualParameters;
+    SymbolTable<Symbol> symbolTable;
     std::optional<Assignment> assignment;
     std::optional<std::string> init;
     std::optional<std::string> trans;

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <NumericConstants.h>
+#include "complyer/util/FormulaStringUtil.hpp"
 
 CommandBase::CommandBase(ModelSpecification m): model(m) {
   verifier = std::make_shared<Verifiers>(Verifiers(m.getSymbols(), m.getKripke()));
@@ -92,9 +93,7 @@ bool CommandBase::CommandSafetyspec::parse(const std::string &line) {
 
 CommandResponse CommandBase::CommandSafetyspec::perform() {
   auto start = std::chrono::high_resolution_clock::now();
-  FormulaTree tree(this->property);
-  tree.substitute(this->label_mapper);
-  this->property = tree.getFormula();
+  this->property = substitute(this->property, this->label_mapper);
   int result = k_induction_verifier->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
@@ -128,9 +127,7 @@ bool CommandBase::CommandLtlspec::parse(const std::string &line) {
 
 CommandResponse CommandBase::CommandLtlspec::perform() {
   auto start = std::chrono::high_resolution_clock::now();
-  FormulaTree tree(this->property);
-  tree.substitute(this->label_mapper);
-  this->property = tree.getFormula();
+  this->property = substitute(this->property, this->label_mapper);
   int result = ltl_bmc_verifier->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
