@@ -1,0 +1,23 @@
+MODULE counter_cell(carry_in)
+
+VAR value : integer;
+VAR carry_out : integer;
+
+ASSIGN
+
+init(value) := 0;
+init(carry_out) := 0;
+next(value) := ((value + carry_in) % 2);
+next(carry_out) := case
+                    (value == 1 && carry_in == 1) : 1;
+                    (value != 1 || carry_in != 1) : 0;
+                   esac;
+
+MODULE main
+
+VAR bit0 : counter_cell(1);
+VAR bit1 : counter_cell(bit0.carry_out);
+VAR bit2 : counter_cell(bit1.carry_out);
+
+SAFETYSPEC
+!(bit0.value == 1 && bit1.value == 1 && bit2.value == 1)
