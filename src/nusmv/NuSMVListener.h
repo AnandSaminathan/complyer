@@ -12,7 +12,7 @@
 class NuSMVListener : public NuSMVParserBaseListener {
   public:
 
-    void exitModule(NuSMVParser::ModuleContext *ctx) override { 
+    void enterModule(NuSMVParser::ModuleContext *ctx) override {
       module.setName((ctx->name)->getText());
       if(ctx->parameters() != nullptr) {
         auto idCtxs = (ctx->parameters())->formula();
@@ -23,6 +23,10 @@ class NuSMVListener : public NuSMVParserBaseListener {
         }
         module.setParameters(ids);
       }
+    }
+
+    void exitModule(NuSMVParser::ModuleContext *ctx) override { 
+      module.setName((ctx->name)->getText());
       nusmv.addModule(module);
       module = Module();
     }
@@ -68,7 +72,9 @@ class NuSMVListener : public NuSMVParserBaseListener {
           actualParameters.emplace_back(idCtx->getText());
         }
       }
-      mod.makeCall((ctx->name)->getText(), actualParameters);
+      bool async = false;
+      if(ctx->PROCESS() != nullptr) { async = true; }
+      mod.makeCall((ctx->name)->getText(), actualParameters, async);
       module.addCall(std::make_shared<Module>(mod)); 
     }
 

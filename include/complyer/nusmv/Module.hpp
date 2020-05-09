@@ -18,8 +18,9 @@ class Module {
       (this->parameters).emplace(parameters); 
     }
 
-    inline void makeCall(std::string callerName, std::vector<std::string> actualParameters) {
+    inline void makeCall(std::string callerName, std::vector<std::string> actualParameters, bool async = false) {
       (this->name) = callerName;
+      (this->async) = async;
       assert((*parameters).size() == actualParameters.size());
       (this->actualParameters).emplace(actualParameters);
     }
@@ -55,6 +56,19 @@ class Module {
     inline std::optional<std::string> getInit() { return init; }
     inline std::optional<std::string> getTrans() { return trans; }
 
+    inline bool isAsync() { return async; }
+
+    inline std::string constantT() {
+      std::string T = "";
+      auto symbols = symbolTable.getSymbols();
+      std::string prefix = name + ".";
+      for(auto symbol : symbols) {
+        std::string symbolName = prefix + symbol.getName();
+        T = land(T, leq(nextId(symbolName), symbolName));
+      }
+      return T;
+    }
+
     inline std::vector<Symbol> getSymbols() { 
       std::vector<Symbol> symbols;
       for(auto call: calls) {
@@ -62,9 +76,10 @@ class Module {
         symbols.insert(symbols.end(), callSymbols.begin(), callSymbols.end());
       }
       auto cur = symbolTable.getSymbols();
-      std::string prefix = (name != "main") ? name + "." : "";
-      for(auto s: cur) {
-        symbols.push_back(Symbol(s.getType(), prefix + s.getName()));
+      std::string prefix;
+      if(name != "main") { prefix = name + ".";  }
+      for(auto symbol: cur) {
+        symbols.push_back(Symbol(symbol.getType(), prefix + symbol.getName()));
       }
       return symbols; 
     }
@@ -72,6 +87,8 @@ class Module {
     Kripke toFormula() {
       std::string I = "";
       std::string T = "";
+
+      std::vector<std::string> asyncT, asyncConstT;
 
       assert(!(assignment && init) && !(assignment && trans));
 
@@ -83,7 +100,7 @@ class Module {
         for(auto symbol: symbols) {
           std::string symbolName = symbol.getName();
           mapper[symbolName] = prefix + symbolName;
-          mapper["next_" + symbolName] = "next_" + prefix + symbolName;
+          mapper[nextId(symbolName)] = nextId(prefix + symbolName);
         }
       }
 
@@ -96,20 +113,40 @@ class Module {
 
       for(auto definition : definitions) { mapper[definition.getId()] = definition.getDefinition(); }
       
-      for(auto call : calls) {
-        Kripke k = (*call).toFormula();
-        I = (I == "") ? k.getI() : land(I, k.getI());
-        T = (T == "") ? k.getT() : land(T, k.getT());
+      for(int i = 0; i < calls.size(); ++i) {
+        auto call = calls[i];
+        Kripke k = call->toFormula();
+        I = land(I, k.getI());
+        if(call->isAsync() == false) {
+          T = land(T, k.getT());
+        } else {
+          asyncT.push_back(k.getT());
+          asyncConstT.push_back(parenthesize(call->constantT()));
+        }  
       }
       
       if(init) { 
-        I = (I == "") ? (*init) : land(I, (*init));
-        T = (T == "") ? (*trans) : land(T, (*trans));
+        I = land(I, (*init));
+        T = land(T, (*trans));
       } else if(assignment) { 
         Kripke k = assignment->toFormula();
-        I = (I == "") ? k.getI() : land(I, k.getI());
-        T = (T == "") ? k.getT() : land(T, k.getT());
+        I = land(I, k.getI());
+        T = land(T, k.getT());
       } 
+
+      if(asyncT.size()) {
+        std::vector<std::string> clauses;
+        for(int i = 0; i < asyncT.size(); ++i) {
+          std::string clause = asyncT[i]; 
+          for(int j = 0; j < asyncConstT.size(); ++j) {
+            if(i != j) {
+              clause = land(clause, asyncConstT[j]);
+            } 
+          }
+          clauses.emplace_back(parenthesize(clause));
+        }
+        T = land(T, exactlyOneTrue(clauses));
+      }
 
       I = substitute(I, mapper);
       T = substitute(T, mapper);
@@ -129,6 +166,7 @@ class Module {
   private:
 
     std::string name;
+    bool async{false};
     std::optional<std::vector<std::string>> parameters, actualParameters;
 
     SymbolTable<Symbol> symbolTable;

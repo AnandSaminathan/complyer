@@ -5,14 +5,15 @@
 #include "formula-tree/formula-tree.h"
 
 inline std::string nextId(std::string id) { return "next_" + id; }
-inline std::string land(std::string op1, std::string op2) { return (op1 + " && " + op2); }
-inline std::string lor(std::string op1, std::string op2) { return (op1 + " || " + op2);  }
-inline std::string limplies(std::string op1, std::string op2) { return (op1 + " -> " + op2);  }
+inline std::string land(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " && " + op2)); }
+inline std::string lor(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " || " + op2));  }
+inline std::string limplies(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " -> " + op2));  }
+inline std::string ldimplies(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " <-> " + op2));  }
 inline std::string parenthesize(std::string op1) { return "(" + op1 + ")";  }
-inline std::string leq(std::string op1, std::string op2) { return (op1 + " == " + op2); }
+inline std::string leq(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " == " + op2)); }
 inline std::string lnot(std::string op1) { return "!" + op1; }
-inline std::string lle(std::string op1, std::string op2) { return (op1 + "<=" + op2); }
-inline std::string lge(std::string op1, std::string op2) { return (op1 + ">=" + op2); }
+inline std::string lle(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " <= " + op2)); }
+inline std::string lge(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " >= " + op2)); }
 
 inline std::string exactlyOneTrue(std::vector<std::string> clauses) {
   std::string form = "";

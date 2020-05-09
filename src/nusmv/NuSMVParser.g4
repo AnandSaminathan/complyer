@@ -24,7 +24,7 @@ ltlSpec            : LTLSPEC newline WS? formula WS? newline bound;
 
 parameters         : WS? OPEN_P formula (COMMA WS? formula)* CLOSE_P;
 declaration        : VAR WS id WS? COLON WS? type WS? SC WS?;
-moduleCall         : VAR WS name=id WS? COLON WS? moduleName=id WS? parameters? WS? SC WS?;
+moduleCall         : VAR WS name=id WS? COLON WS? PROCESS? WS? moduleName=id WS? parameters? WS? SC WS?;
 assignment         : ASSIGN WS? newline ( initAssignment
                                         | seqNextAssignment
                                         | conNextAssignment
@@ -71,7 +71,7 @@ value              : (TRUE | FALSE | id | wholeNumber);
 formula            : (operators | OPEN_P | CLOSE_P | id | nextId | TRUE | FALSE | wholeNumber | WS)+;
 assign             : COLON ASSGN;
 nextId             : NEXT UNDERSCORE id;
-id                 : (alpha | UNDERSCORE | DOT) (alphaNum | UNDERSCORE | DOT)*;
+id                 : (alpha | UNDERSCORE) (alphaNum | UNDERSCORE | DOT)*;
 wholeNumber        : (DIGIT)+;
 alpha              : (LOWER_CASE | UPPER_CASE);
 alphaNum           : (alpha | DIGIT);

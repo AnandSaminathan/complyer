@@ -17,9 +17,6 @@ class Assignment {
     inline std::vector<ConNext> getConNexts() { return conNexts; }
 
     Kripke toFormula() {
-      for(auto nxt: conNexts) {
-        std::cout << nxt.toFormulaString() << '\n';
-      }
       assert(!(seqNexts.size() && conNexts.size()));
 
       std::string I = "";
