@@ -23,75 +23,41 @@
 --      turn    = 2;
 --p8:wants_to_enter[1] = false;
 --   // remainder section
---
---
---
---P2:
---q1:wants_to_enter[2] = true;
---q2:while (wants_to_enter[1] == true) {
---q3:   if (turn ≠ 2) {
---q4:      wants_to_enter[2] = false;
---q5:      while (turn ≠ 2) {
---                      // busy wait
---                    
---         }
---q6:      wants_to_enter[2] = true;
---               
---      }
---         
---   }
---
---q7:// critical section
---   ...
---      turn    = 1;
---q8:wants_to_enter[2] = false;
---   // remainder section
---
 
-
-MODULE main
+MODULE user(wants_to_enter_other, turn)
 
 VAR p : integer;
-VAR q : integer;
-VAR wants_to_enter1 : boolean;
-VAR wants_to_enter2 : boolean;
-VAR turn : integer;
-
+VAR wants_to_enter : boolean;
 
 ASSIGN
 
 init(p) := 1;
-init(q) := 1;
-init(wants_to_enter1) := false;
-init(wants_to_enter2) := false;
-init(turn) := 1;
+init(wants_to_enter) := false;
 
-next({p, wants_to_enter1}) := (p == 1 && wants_to_enter1 == false) [u1]: {2, true};
-next({p, wants_to_enter2}) := (p == 2 && wants_to_enter2 == false) [u2]: {7, false};
-next({p, wants_to_enter2}) := (p == 2 && wants_to_enter2 == true)  [u3]: {3, true};
+next({p, wants_to_enter}) := (p == 1 && wants_to_enter == false) [u1]: {2, true};
+next({p, wants_to_enter_other}) := (p == 2 && wants_to_enter_other == false) [u2]: {7, false};
+next({p, wants_to_enter_other}) := (p == 2 && wants_to_enter_other == true)  [u3]: {3, true};
 next({p, turn}) := (p == 3 && turn == 1) [u4]: {2, 1};
 next({p, turn}) := (p == 3 && turn == 2) [u5]: {4, 2};
-next({p, wants_to_enter1}) := (p == 4 && wants_to_enter1 == true) [u6]: {5, false};
+next({p, wants_to_enter}) := (p == 4 && wants_to_enter == true) [u6]: {5, false};
 next({p, turn}) := (p == 5 && turn == 1) [u7]: {6, 1};
 next({p, turn}) := (p == 5 && turn == 2) [u8]: {5, 2};
-next({p, wants_to_enter1}) := (p == 6 && wants_to_enter1 == false) [u9]: {2, true};
+next({p, wants_to_enter}) := (p == 6 && wants_to_enter == false) [u9]: {2, true};
 next({p, turn}) := (p == 7 && turn == 1) [u10]: {8, 2};
 next({p, turn}) := (p == 7 && turn == 2) [u11]: {8, 2};
-next({p, wants_to_enter1}) := (p == 8 && wants_to_enter1 == true) [u12]: {1, false}; 
+next({p, wants_to_enter}) := (p == 8 && wants_to_enter == true) [u12]: {1, false}; 
 
 
-next({q, wants_to_enter2}) := (q == 1 && wants_to_enter2 == false) [v1]: {2, true};
-next({q, wants_to_enter1}) := (q == 2 && wants_to_enter1 == false) [v2]: {7, false};
-next({q, wants_to_enter1}) := (q == 2 && wants_to_enter1 == true)  [v3]: {3, true};
-next({q, turn}) := (q == 3 && turn == 1) [v4]: {4, 1};
-next({q, turn}) := (q == 3 && turn == 2) [v5]: {2, 2};
-next({q, wants_to_enter2}) := (q == 4 && wants_to_enter2 == true) [v6]: {5, false};
-next({q, turn}) := (q == 5 && turn == 1) [v7]: {5, 1};
-next({q, turn}) := (q == 5 && turn == 2) [v8]: {6, 2};
-next({q, wants_to_enter2}) := (q == 6 && wants_to_enter2 == false) [v9]: {2, true};
-next({q, turn}) := (q == 7 && turn == 1) [v10]: {8, 1};
-next({q, turn}) := (q == 7 && turn == 2) [v11]: {8, 1};
-next({q, wants_to_enter2}) := (q == 8 && wants_to_enter2 == true) [v12]: {1, false}; 
+MODULE main
+
+VAR turn : integer;
+VAR proc1 : process user(proc2.wants_to_enter, turn);
+VAR proc2 : process user(proc1.wants_to_enter, turn);
+
+
+ASSIGN
+
+init(turn) := 1;
 
 SAFETYSPEC
-!(p == 7 && q == 7)
+!(proc1.p == 7 && proc2.p == 7)

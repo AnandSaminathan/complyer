@@ -1,0 +1,36 @@
+MODULE user(id, turn, other_flag)
+
+VAR p : integer;
+VAR other_id : integer;
+VAR flag : boolean;
+
+ASSIGN
+
+init(p) := 1;
+init(flag) := false;
+init(other_id) := (1 - id);
+
+next({p, flag}) := (p == 1 && flag == false) [u1] : {2, true};
+next({p, turn}) := (p == 2 && turn == other_id) [u2] : {3, id};
+next({p, turn}) := (p == 2 && turn == id) [u3] : {3, id};
+next({p, other_flag}) := (p == 3 && other_flag == false) [u4]: {4, false};
+next({p, turn}) := (p == 3 && turn == other_id) [u5]: {4, other_id};
+next({p, turn, other_flag}) := (p == 3 && turn == id && other_flag == true) [u6] : {3, id, true};
+next({p, flag}) := (p == 4 && flag == true) [u7] : {1, false};
+
+
+MODULE main
+
+VAR proc0 : process user(0, turn, proc1.flag);
+VAR proc1 : process user(1, turn, proc0.flag);
+VAR turn  : integer;
+
+ASSIGN
+
+init(turn) := 1;
+
+
+SAFETYSPEC
+!(proc0.p == 4 && proc1.p == 4)
+
+

@@ -69,6 +69,12 @@ class Module {
       return T;
     }
 
+    inline std::vector<std::string> getLocalSymbolNames() {
+      std::vector<std::string> symbolNames = getSymbolNames(symbolTable.getSymbols());
+      if(parameters) { symbolNames.insert(symbolNames.end(), (*parameters).begin(), (*parameters).end()); }
+      return symbolNames;
+    }
+
     inline std::vector<Symbol> getSymbols() { 
       std::vector<Symbol> symbols;
       for(auto call: calls) {
@@ -108,6 +114,7 @@ class Module {
         assert(actualParameters);
         for(int i = 0; i < (*parameters).size(); ++i) { 
           mapper[(*parameters)[i]] = (*actualParameters)[i]; 
+          mapper[nextId((*parameters)[i])] = nextId((*actualParameters)[i]);
         }
       }
 
@@ -145,7 +152,7 @@ class Module {
           }
           clauses.emplace_back(parenthesize(clause));
         }
-        T = land(T, exactlyOneTrue(clauses));
+        T = land(T, exactlyOneTruePb(clauses));
       }
 
       I = substitute(I, mapper);
