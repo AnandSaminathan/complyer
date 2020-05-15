@@ -16,6 +16,9 @@ class Main {
     void main() {
       NuSMV nusmv = constructModel();
       Kripke k = nusmv.toFormula();
+      auto symbols = nusmv.getSymbols();
+      auto symbolNames = getSymbolNames(symbols);
+      vocabulary.insert(vocabulary.end(), symbolNames.begin(), symbolNames.end());
       if(inputOptions->isVerbose()) {
         printVariables(nusmv);
         printKripke(k);

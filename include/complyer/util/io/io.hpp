@@ -1,21 +1,18 @@
 #pragma once
 
 #include <string>
+#include <vector>
+
+std::vector<std::string> vocabulary = {"safetyspec", "ltlspec", "bound",
+                                       "length",     "trace",   "quit"};
 
 #ifdef COMPLYER_USE_READLINE
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
-  #include <vector>
   #include "readline/readline.h"
   #include "readline/history.h"
 
-  std::vector<std::string> commands = { "safetyspec", 
-                                        "ltlspec", 
-                                        "bound", 
-                                        "length", 
-                                        "trace", 
-                                        "quit" };
 
   char* commandNameGenerator(const char* text, int state) {
     static std::vector<std::string> matches;
@@ -26,7 +23,7 @@
       match_index = 0;
       std::string textstr = std::string(text);
 
-      for(auto word : commands) {
+      for(auto word : vocabulary) {
         if (word.size() >= textstr.size() &&
             word.compare(0, textstr.size(), textstr) == 0) {
           matches.push_back(word);
