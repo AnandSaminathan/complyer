@@ -3,8 +3,49 @@
 #include <string>
 
 #ifdef COMPLYER_USE_READLINE
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <string.h>
+  #include <vector>
   #include "readline/readline.h"
   #include "readline/history.h"
+
+  std::vector<std::string> commands = { "safetyspec", 
+                                        "ltlspec", 
+                                        "bound", 
+                                        "length", 
+                                        "trace", 
+                                        "quit" };
+
+  char* commandNameGenerator(const char* text, int state) {
+    static std::vector<std::string> matches;
+    static size_t match_index = 0;
+
+    if(state == 0) {
+      matches.clear();
+      match_index = 0;
+      std::string textstr = std::string(text);
+
+      for(auto word : commands) {
+        if (word.size() >= textstr.size() &&
+            word.compare(0, textstr.size(), textstr) == 0) {
+          matches.push_back(word);
+        }
+      }
+    }
+
+    if(match_index >= matches.size()) {
+      return nullptr;
+    } else {
+      return strdup(matches[match_index++].c_str());
+    }
+  }
+
+  char** commandCompletion(const char* text, int start, int end) {
+    rl_attempted_completion_over = 1;
+    return rl_completion_matches(text, commandNameGenerator);
+  }
+  
 #endif
 
 class IO {
@@ -14,6 +55,8 @@ class IO {
     
     #ifdef COMPLYER_USE_READLINE
       static std::string getline() {
+        rl_attempted_completion_function = commandCompletion;
+
         const char* line = readline(">>> ");
         if(line == nullptr) { exit(0); }
         if(*line) add_history(line);
