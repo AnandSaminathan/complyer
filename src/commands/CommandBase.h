@@ -11,9 +11,10 @@
 #include "ModelSpecification.h"
 #include "CommandResponse.h"
 
+// TODO : Implement Destructors for proper memory deallocation
 class CommandBase {
   public:
-    explicit CommandBase(ModelSpecification m);
+    explicit CommandBase(const ModelSpecification& m);
     CommandResponse perform(const std::string &line);
   private:
     class CommandInterface;
@@ -29,101 +30,113 @@ class CommandBase {
     struct Verifiers;
 
     ModelSpecification model;
-    std::shared_ptr<Commands> command;
-    std::shared_ptr<Verifiers> verifier;
+    Commands *command;
+    Verifiers *verifier;
 };
 
 class CommandBase::CommandInterface {
   public:
-    explicit CommandInterface(std::string op): operation(std::move(op)){};
+    explicit CommandInterface(std::string op, Commands *commands, Verifiers *verifiers, ModelSpecification modelSpecification);
     [[nodiscard]] inline std::string getOperation() const { return operation; }
+    inline virtual void prePerform(){};
     virtual bool parse(const std::string &);
+    inline virtual void postPerform(){};
     virtual CommandResponse perform() = 0;
+  protected:
+    Commands *command;
+    Verifiers *verifier;
+    ModelSpecification model_specification;
   private:
     const std::string operation;
 };
 
 class CommandBase::CommandQuit : public CommandInterface {
   public:
-    CommandQuit() : CommandInterface(StringConstants::QUIT){};
+    CommandQuit(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::QUIT, cmds, vrfs, std::move(ms)){};
     CommandResponse perform() override;
 };
 
 class CommandBase::CommandTrace : public CommandInterface {
   public:
-    CommandTrace() : CommandInterface(StringConstants::TRACE){ (this->common_verifier) = nullptr; };
+    CommandTrace(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::TRACE, cmds, vrfs, std::move(ms)){};
     CommandResponse perform() override;
-    void setVerifier(std::shared_ptr<Verifier>);
+    void setVerifier(Verifier *current_verifier){ common_verifier = current_verifier; }
   private:
-    std::shared_ptr<Verifier> common_verifier;
+    Verifier *common_verifier{nullptr};
 };
 
 class CommandBase::CommandLength : public CommandInterface {
   public:
-    CommandLength() : CommandInterface(StringConstants::LENGTH){ (this->common_verifier) = nullptr; };
+    CommandLength(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::LENGTH, cmds, vrfs, std::move(ms)){};
     CommandResponse perform() override;
-    void setVerifier(std::shared_ptr<Verifier>);
+    void setVerifier(Verifier *current_verifier){ common_verifier = current_verifier; }
   private:
-    std::shared_ptr<Verifier> common_verifier;
+    Verifier *common_verifier{nullptr};
 };
 
 class CommandBase::CommandSafetyspec : public CommandInterface {
   public:
-    CommandSafetyspec(std::shared_ptr<kInduction> kiv, std::map<std::string, std::string> lm): CommandInterface(StringConstants::SAFETYSPEC), k_induction_verifier(std::move(kiv)), label_mapper(std::move(lm)){}
+    CommandSafetyspec(Commands *cmds, Verifiers *vrfs, ModelSpecification ms): CommandInterface(StringConstants::SAFETYSPEC, cmds, vrfs, std::move(ms)){};
     bool parse(const std::string &) override;
     CommandResponse perform() override;
+    void prePerform() override;
   private:
-    std::shared_ptr<kInduction> k_induction_verifier;
-    std::map<std::string, std::string> label_mapper;
     std::string property;
 };
 
 class CommandBase::CommandBound : public CommandInterface {
   public:
-    explicit CommandBound(std::shared_ptr<ltlBmc> lbv): CommandInterface(StringConstants::BOUND), ltl_bmc_verifier(std::move(lbv)){}
+    explicit CommandBound(Commands *cmds, Verifiers *vrfs, ModelSpecification ms): CommandInterface(StringConstants::BOUND, cmds, vrfs, std::move(ms)){};
     bool parse(const std::string &) override;
     CommandResponse perform() override;
   private:
-    std::shared_ptr<ltlBmc> ltl_bmc_verifier;
     int bound{};
 };
 
 class CommandBase::CommandLtlspec : public CommandInterface {
   public:
-    CommandLtlspec(std::shared_ptr<ltlBmc> lbv, std::map<std::string, std::string> lm): CommandInterface(StringConstants::LTLSPEC), ltl_bmc_verifier(std::move(lbv)), label_mapper(std::move(lm)){}
+    CommandLtlspec(Commands *cmds, Verifiers *vrfs, ModelSpecification ms): CommandInterface(StringConstants::LTLSPEC, cmds, vrfs, std::move(ms)){};
     bool parse(const std::string &) override;
     CommandResponse perform() override;
+    void prePerform() override;
   private:
-    std::shared_ptr<ltlBmc> ltl_bmc_verifier;
-    std::map<std::string, std::string> label_mapper;
     std::string property;
 };
 
 class CommandBase::CommandIC3 : public CommandInterface {
   public:
-    CommandIC3(std::shared_ptr<IC3> iv, std::map<std::string, std::string> lm) : CommandInterface(StringConstants::IC3), ic3_verifier(std::move(iv)), label_mapper(std::move(lm)){};
+    CommandIC3(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::IC3, cmds, vrfs, std::move(ms)){};
     bool parse(const std::string &) override;
     CommandResponse perform() override;
+    void prePerform() override;
   private:
-    std::shared_ptr<IC3> ic3_verifier;
-    std::map<std::string, std::string> label_mapper;
     std::string property;
 };
 
 struct CommandBase::Verifiers {
-  std::shared_ptr<ltlBmc> ltl_bmc_verifier;
-  std::shared_ptr<kInduction> k_induction_verifier;
-  std::shared_ptr<IC3> ic3_verifier;
-  Verifiers(const std::vector<Symbol>& symbols, Kripke kripke);
+  ltlBmc *ltl_bmc_verifier;
+  kInduction *k_induction_verifier;
+  IC3 *ic3_verifier;
+
+  // VRFR_LIST_SIZE must always be the last element
+  enum verifier_list{LTL_BMC, K_INDUCTION, IC_3, VRFR_LIST_SIZE};
+  Verifier *verifiers[VRFR_LIST_SIZE]{};
+
+  explicit Verifiers(ModelSpecification ms);
 };
 
 struct CommandBase::Commands {
-  std::shared_ptr<CommandQuit> quit;
-  std::shared_ptr<CommandTrace> trace;
-  std::shared_ptr<CommandLength> length;
-  std::shared_ptr<CommandSafetyspec> safetyspec;
-  std::shared_ptr<CommandBound> bound;
-  std::shared_ptr<CommandLtlspec> ltlspec;
-  std::shared_ptr<CommandIC3> ic3;
-  Commands(const std::shared_ptr<Verifiers> &verifier, const std::map<std::string, std::string>& labelMapper);
+  CommandQuit *quit;
+  CommandTrace *trace;
+  CommandLength *length;
+  CommandSafetyspec *safetyspec;
+  CommandBound *bound;
+  CommandLtlspec *ltlspec;
+  CommandIC3 *ic3;
+
+  // CMD_LIST_SIZE must always be the last element
+  enum command_list{QUIT, TRACE, LENGTH, SAFETYSPEC, BOUND, LTLSPEC, IC_3, CMD_LIST_SIZE};
+  CommandInterface *commands[CMD_LIST_SIZE]{};
+
+  Commands(Verifiers *verifiers, const ModelSpecification& ms);
 };
