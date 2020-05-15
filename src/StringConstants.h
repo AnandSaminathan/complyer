@@ -9,4 +9,5 @@ namespace StringConstants {
   const std::string LENGTH = "LENGTH";
   const std::string TRACE = "TRACE";
   const std::string QUIT = "QUIT";
+  const std::string IC3 = "IC3";
 }

@@ -26,6 +26,11 @@ CommandResponse CommandBase::perform(const std::string &line) {
     command->trace->setVerifier(verifier->ltl_bmc_verifier);
     return command->ltlspec->perform();
   }
+  if(command->ic3->parse(line)){
+    command->length->setVerifier(verifier->ic3_verifier);
+    command->trace->setVerifier(verifier->ic3_verifier);
+    return command->ic3->perform();
+  }
   return CommandResponse(std::string(), int(), "Invalid Command", long());
 }
 
@@ -52,7 +57,7 @@ CommandResponse CommandBase::CommandTrace::perform() {
     for(int j=0; j<states.size();j++) {
       auto state = states[j];
       int vars = symbols.size();
-      stream << "State " << j+1;
+      stream << "State " << j+1 << '\n';
       for(int i = 0; i < vars; ++i) {
         stream << "\t" << symbols[i] << " = " << state[i] << "\n";
       }
@@ -142,9 +147,31 @@ CommandBase::Commands::Commands(const std::shared_ptr<Verifiers> &verifier, cons
   safetyspec = std::make_shared<CommandSafetyspec>(CommandSafetyspec(verifier->k_induction_verifier, labelMapper));
   bound = std::make_shared<CommandBound>(CommandBound(verifier->ltl_bmc_verifier));
   ltlspec = std::make_shared<CommandLtlspec>(CommandLtlspec(verifier->ltl_bmc_verifier, labelMapper));
+  ic3 = std::make_shared<CommandIC3>(CommandIC3(verifier->ic3_verifier, labelMapper));
 }
 
 CommandBase::Verifiers::Verifiers(const std::vector<Symbol> &symbols, Kripke kripke) {
   ltl_bmc_verifier = std::make_shared<ltlBmc>(ltlBmc(symbols, kripke.getI(), kripke.getT()));
   k_induction_verifier = std::make_shared<kInduction>(kInduction(symbols, kripke.getI(), kripke.getT()));
+  ic3_verifier = std::make_shared<IC3>(IC3(symbols, kripke.getI(), kripke.getT()));
+}
+
+bool CommandBase::CommandIC3::parse(const std::string &line) {
+  if(!CommandInterface::parse(line)) return false;
+  std::stringstream stream(line);
+  std::string cmd; stream >> cmd;
+  std::getline(stream, this->property);
+  return true;
+}
+
+CommandResponse CommandBase::CommandIC3::perform() {
+  auto start = std::chrono::high_resolution_clock::now();
+  FormulaTree tree(this->property);
+  tree.substitute(this->label_mapper);
+  this->property = tree.getFormula();
+  int result = ic3_verifier->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  std::string result_string = result == NumericConstants::SAT ? "SAT" : "UNSAT";
+  return CommandResponse(getOperation(), result, result_string, duration.count());
 }
