@@ -4,7 +4,8 @@
 #include <vector>
 
 std::vector<std::string> vocabulary = {"safetyspec", "ltlspec", "bound",
-                                       "length",     "trace",   "quit"};
+                                       "length",     "trace",   "quit", 
+                                       "ic3"};
 
 #ifdef COMPLYER_USE_READLINE
   #include <stdio.h>
