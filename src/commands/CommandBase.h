@@ -11,25 +11,25 @@
 #include "ModelSpecification.h"
 #include "CommandResponse.h"
 
-// TODO : Implement Destructors for proper memory deallocation
 class CommandBase {
   public:
     explicit CommandBase(const ModelSpecification& m);
     CommandResponse perform(const std::string &line);
   private:
     class CommandInterface;
-    class CommandQuit;
-    class CommandTrace;
-    class CommandLength;
-    class CommandSafetyspec;
-    class CommandBound;
-    class CommandLtlspec;
+
     class CommandIC3;
+    class CommandQuit;
+    class CommandHelp;
+    class CommandTrace;
+    class CommandBound;
+    class CommandLength;
+    class CommandLtlspec;
+    class CommandSafetyspec;
 
     struct Commands;
     struct Verifiers;
 
-    ModelSpecification model;
     Commands *command;
     Verifiers *verifier;
 };
@@ -38,10 +38,11 @@ class CommandBase::CommandInterface {
   public:
     explicit CommandInterface(std::string op, Commands *commands, Verifiers *verifiers, ModelSpecification modelSpecification);
     [[nodiscard]] inline std::string getOperation() const { return operation; }
-    inline virtual void prePerform(){};
     virtual bool parse(const std::string &);
-    inline virtual void postPerform(){};
     virtual CommandResponse perform() = 0;
+    inline virtual void prePerform(){};
+    inline virtual void postPerform(){};
+    virtual std::string help() = 0;
   protected:
     Commands *command;
     Verifiers *verifier;
@@ -54,6 +55,7 @@ class CommandBase::CommandQuit : public CommandInterface {
   public:
     CommandQuit(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::QUIT, cmds, vrfs, std::move(ms)){};
     CommandResponse perform() override;
+    std::string help() override;
 };
 
 class CommandBase::CommandTrace : public CommandInterface {
@@ -61,6 +63,7 @@ class CommandBase::CommandTrace : public CommandInterface {
     CommandTrace(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::TRACE, cmds, vrfs, std::move(ms)){};
     CommandResponse perform() override;
     void setVerifier(Verifier *current_verifier){ common_verifier = current_verifier; }
+    std::string help() override;
   private:
     Verifier *common_verifier{nullptr};
 };
@@ -70,6 +73,7 @@ class CommandBase::CommandLength : public CommandInterface {
     CommandLength(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::LENGTH, cmds, vrfs, std::move(ms)){};
     CommandResponse perform() override;
     void setVerifier(Verifier *current_verifier){ common_verifier = current_verifier; }
+    std::string help() override;
   private:
     Verifier *common_verifier{nullptr};
 };
@@ -80,6 +84,7 @@ class CommandBase::CommandSafetyspec : public CommandInterface {
     bool parse(const std::string &) override;
     CommandResponse perform() override;
     void prePerform() override;
+    std::string help() override;
   private:
     std::string property;
 };
@@ -89,6 +94,7 @@ class CommandBase::CommandBound : public CommandInterface {
     explicit CommandBound(Commands *cmds, Verifiers *vrfs, ModelSpecification ms): CommandInterface(StringConstants::BOUND, cmds, vrfs, std::move(ms)){};
     bool parse(const std::string &) override;
     CommandResponse perform() override;
+    std::string help() override;
   private:
     int bound{};
 };
@@ -99,6 +105,7 @@ class CommandBase::CommandLtlspec : public CommandInterface {
     bool parse(const std::string &) override;
     CommandResponse perform() override;
     void prePerform() override;
+    std::string help() override;
   private:
     std::string property;
 };
@@ -109,8 +116,21 @@ class CommandBase::CommandIC3 : public CommandInterface {
     bool parse(const std::string &) override;
     CommandResponse perform() override;
     void prePerform() override;
+    std::string help() override;
   private:
     std::string property;
+};
+
+class CommandBase::CommandHelp : public CommandInterface {
+  public:
+    CommandHelp(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::HELP, cmds, vrfs, std::move(ms)){};
+    bool parse(const std::string &) override;
+    CommandResponse perform() override;
+    std::string help() override;
+  private:
+    std::string general_help();
+    std::string specific_help();
+    std::string cmd_help{};
 };
 
 struct CommandBase::Verifiers {
@@ -133,9 +153,10 @@ struct CommandBase::Commands {
   CommandBound *bound;
   CommandLtlspec *ltlspec;
   CommandIC3 *ic3;
+  CommandHelp *help;
 
   // CMD_LIST_SIZE must always be the last element
-  enum command_list{QUIT, TRACE, LENGTH, SAFETYSPEC, BOUND, LTLSPEC, IC_3, CMD_LIST_SIZE};
+  enum command_list{QUIT, TRACE, LENGTH, SAFETYSPEC, BOUND, LTLSPEC, IC_3, HELP, CMD_LIST_SIZE};
   CommandInterface *commands[CMD_LIST_SIZE]{};
 
   Commands(Verifiers *verifiers, const ModelSpecification& ms);
