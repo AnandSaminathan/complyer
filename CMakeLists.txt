@@ -30,6 +30,7 @@ include(FindReadline)
 include_directories(${ANTLR4_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/src/)
+include_directories(${PROJECT_SOURCE_DIR}/include/z3)
 
 find_package(ANTLR REQUIRED)
 

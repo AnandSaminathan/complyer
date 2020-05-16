@@ -6,14 +6,6 @@ LABEL Description="A model checker for safety and temporal properties."
 
 RUN apt-get update && apt-get install --no-install-recommends -y pkg-config uuid-dev antlr4 git python build-essential wget tar cmake libtinfo-dev
 
-# z3 setup
-RUN git clone https://github.com/Z3Prover/z3 \
-    && cd z3 \
-    && python scripts/mk_make.py \
-    && cd build \
-    && make \
-    && make install
-
 # readline setup
 RUN wget ftp://ftp.gnu.org/gnu/readline/readline-8.0.tar.gz \
     && tar -xvf readline-8.0.tar.gz \
