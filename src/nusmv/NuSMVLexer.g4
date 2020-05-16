@@ -3,6 +3,7 @@ lexer grammar NuSMVLexer;
 COMMENT     : '--' ~('\n')* -> skip;
 BOUND       : 'BOUND';
 LTLSPEC     : 'LTLSPEC';
+PROCESS     : 'process';
 SAFETYSPEC  : 'SAFETYSPEC';
 CASE        : 'case';
 ESAC        : 'esac';

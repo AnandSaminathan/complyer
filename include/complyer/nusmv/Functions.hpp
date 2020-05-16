@@ -72,7 +72,7 @@ class ConNext {
       std::string formula = definition.toFormulaString(ids);
 
       for(auto id : notPresent) {
-        formula = land(formula, leq(nextId(id), id));
+        formula = land(formula, parenthesize(leq(nextId(id), id)));
       }
 
       (this->formula) = parenthesize(formula);

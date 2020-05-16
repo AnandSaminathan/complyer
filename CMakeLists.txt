@@ -82,3 +82,28 @@ if(NOT COMPLYER_DISABLE_READLINE)
   endif()
 endif()
 
+add_custom_command(TARGET complyer POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  "${PROJECT_SOURCE_DIR}/libs/libantlr4-runtime.so.4.8"
+  $<TARGET_FILE_DIR:complyer>)
+
+add_custom_command(TARGET complyer POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  "${PROJECT_SOURCE_DIR}/libs/libantlr4-runtime.so"
+  $<TARGET_FILE_DIR:complyer>)
+
+add_custom_command(TARGET complyer POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  "${PROJECT_SOURCE_DIR}/libs/libformula-tree.so"
+  $<TARGET_FILE_DIR:complyer>)
+
+add_custom_command(TARGET complyer POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  "${PROJECT_SOURCE_DIR}/libs/libz3.so"
+  $<TARGET_FILE_DIR:complyer>)
+
+add_custom_command(TARGET complyer POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  "${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so"
+  $<TARGET_FILE_DIR:complyer>)
+

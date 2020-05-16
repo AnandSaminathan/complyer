@@ -1,0 +1,32 @@
+MODULE user(semaphore)
+
+VAR state : integer;
+
+ASSIGN
+
+init(state) := 0;
+next(state) := case
+                (state == 0) : {0, 1};
+                (state == 1 && semaphore == false) : 2;
+                (state == 1 && semaphore == true) : 1;
+                (state == 2) : {2, 3};
+                (state == 3) : 0;
+               esac;
+next(semaphore) := case
+                    (state == 1) : true;
+                    (state == 3) : false;
+                    (state == 0 || state == 2) : semaphore;
+                   esac;
+
+MODULE main
+
+VAR semaphore : boolean;
+VAR proc1     : process user(semaphore);
+VAR proc2     : process user(semaphore);
+
+ASSIGN
+
+init(semaphore) := false;
+
+SAFETYSPEC
+!(proc1.state == 2 && proc2.state == 2) 

@@ -1,0 +1,63 @@
+--    //wants_to_enter[] is boolean array; and turn is an integer
+--    wants_to_enter[1] = false
+--        wants_to_enter[2] = false
+--            turn    = 1   // or 2
+--
+--            P1:
+--p1:wants_to_enter[1] = true;
+--p2:while (wants_to_enter[2] == true) {
+--p3:   if (turn ≠ 1) {
+--p4:      wants_to_enter[1] = false;
+--p5:      while (turn ≠ 1) {
+--                      // busy wait
+--                    
+--         }
+--p6:      wants_to_enter[1] = true;
+--               
+--      }
+--         
+--   }
+--
+--p7:// critical section
+--   ...
+--      turn    = 2;
+--p8:wants_to_enter[1] = false;
+--   // remainder section
+
+MODULE user(wants_to_enter_other, turn)
+
+VAR p : integer;
+VAR wants_to_enter : boolean;
+
+ASSIGN
+
+init(p) := 1;
+init(wants_to_enter) := false;
+
+next({p, wants_to_enter}) := (p == 1 && wants_to_enter == false) [u1]: {2, true};
+next({p, wants_to_enter_other}) := (p == 2 && wants_to_enter_other == false) [u2]: {7, false};
+next({p, wants_to_enter_other}) := (p == 2 && wants_to_enter_other == true)  [u3]: {3, true};
+next({p, turn}) := (p == 3 && turn == 1) [u4]: {2, 1};
+next({p, turn}) := (p == 3 && turn == 2) [u5]: {4, 2};
+next({p, wants_to_enter}) := (p == 4 && wants_to_enter == true) [u6]: {5, false};
+next({p, turn}) := (p == 5 && turn == 1) [u7]: {6, 1};
+next({p, turn}) := (p == 5 && turn == 2) [u8]: {5, 2};
+next({p, wants_to_enter}) := (p == 6 && wants_to_enter == false) [u9]: {2, true};
+next({p, turn}) := (p == 7 && turn == 1) [u10]: {8, 2};
+next({p, turn}) := (p == 7 && turn == 2) [u11]: {8, 2};
+next({p, wants_to_enter}) := (p == 8 && wants_to_enter == true) [u12]: {1, false}; 
+
+
+MODULE main
+
+VAR turn : integer;
+VAR proc1 : process user(proc2.wants_to_enter, turn);
+VAR proc2 : process user(proc1.wants_to_enter, turn);
+
+
+ASSIGN
+
+init(turn) := 1;
+
+SAFETYSPEC
+!(proc1.p == 7 && proc2.p == 7)

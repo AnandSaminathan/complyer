@@ -1,0 +1,46 @@
+MODULE user1(turn, other_flag)
+
+VAR p : integer;
+VAR flag : boolean;
+
+ASSIGN
+
+init(p) := 1;
+init(flag) := false;
+
+next({p, flag}) := (p == 1 && flag == false) [u1] : {2, true};
+next({p, turn}) := (p == 2) [u2] : {3, 2};
+next({p}) := (p == 3 && other_flag == true && turn == 2) [u3] : {3};
+next({p}) := (p == 3 && !(other_flag == true && turn == 2)) [u4] : {4};
+next({p, flag}) := (p == 4 && flag == true) [u5] : {1, false};
+
+MODULE user2(turn, other_flag)
+
+VAR p : integer;
+VAR flag : boolean;
+
+ASSIGN
+
+init(p) := 1;
+init(flag) := false;
+
+next({p, flag}) := (p == 1 && flag == false) [u1] : {2, true};
+next({p, turn}) := (p == 2) [u2] : {3, 1};
+next({p}) := (p == 3 && other_flag == true && (turn == 1)) [u3] : {3};
+next({p}) := (p == 3 && !(other_flag == true && turn == 1)) [u4] : {4};
+next({p, flag}) := (p == 4 && flag == true) [u5] : {1, false};
+
+
+MODULE main
+
+VAR proc1 : process user1(turn, proc2.flag);
+VAR proc2 : process user2(turn, proc1.flag);
+VAR turn  : integer;
+
+ASSIGN
+
+init(turn) := 0;
+
+SAFETYSPEC
+!(proc1.p == 4 && proc2.p == 4)
+

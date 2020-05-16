@@ -1,0 +1,80 @@
+-- // Entry protocol
+--p1: flag[self] ← 1                     // Standing outside waiting room
+--p2: await(all flag[1..N] ∈ {0, 1, 2})  // Wait for open door
+--p3: flag[self] ← 3                     // Standing in doorway
+--p4: if any flag[1..N] = 1:             // Another process is waiting to enter
+--p5:   flag[self] ← 2                   // Waiting for other processes to enter
+--p6:   await(any flag[1..N] = 4)        // Wait for a process to enter and close the door
+--
+--p7: flag[self] ← 4                       // The door is closed
+--p8: await(all flag[1..self-1] ∈ {0, 1})  // Wait for everyone of lower ID to finish exit protocol
+--
+--// Critical section
+--// ...
+--
+--// Exit protocol
+--p9: await(all flag[self+1..N] ∈ {0, 1, 4})  // Ensure everyone in the waiting room has
+--                                            // realized that the door is supposed to be closed
+--p10:flag[self] ← 0                          // Leave. Reopen door if nobody is still in the waiting room
+--
+
+MODULE user1(other_flag)
+
+VAR p : integer;
+VAR flag : integer;
+
+ASSIGN
+
+init(p) := 1;
+init(flag) := 0;
+
+next({p, flag}) := (p == 1 && flag == 0) [u1] : {2, 1};
+next({p}) := (p == 2 && other_flag >= 0 && other_flag <= 2) [u2] : {3};
+next({p}) := (p == 2 && other_flag >= 3 && other_flag <= 4) [u3] : {2};
+next({p, flag}) := (p == 3 && flag == 1) [u4] : {4, 3};
+next({p}) := (p == 4 && other_flag != 1) [u5] : {7};
+next({p}) := (p == 4 && other_flag == 1) [u6] : {5};
+next({p, flag}) := (p == 5 && flag == 3) [u7] : {6, 2};
+next({p}) := (p == 6 && other_flag != 4) [u8] : {6};
+next({p}) := (p == 6 && other_flag == 4) [u9] : {7};
+next({p, flag}) := (p == 7 && (flag == 2 || flag == 3)) [u10] : {8, 4};
+next({p}) := (p == 8) [u11] : {9};
+next({p}) := (p == 9 && other_flag != 2 && other_flag != 3) [u12] : {10};
+next({p}) := (p == 9 && (other_flag == 2 || other_flag == 3)) [u13] : {9};
+next({p, flag}) := (p == 10 && flag == 4) [u14] : {1, 0};
+
+MODULE user2(other_flag)
+
+VAR p : integer;
+VAR flag : integer;
+
+ASSIGN
+
+init(p) := 1;
+init(flag) := 0;
+
+next({p, flag}) := (p == 1 && flag == 0) [u1] : {2, 1};
+next({p}) := (p == 2 && other_flag >= 0 && other_flag <= 2) [u2] : {3};
+next({p}) := (p == 2 && other_flag >= 3 && other_flag <= 4) [u3] : {2};
+next({p, flag}) := (p == 3 && flag == 1) [u4] : {4, 3};
+next({p}) := (p == 4 && other_flag != 1) [u5] : {7};
+next({p}) := (p == 4 && other_flag == 1) [u6] : {5};
+next({p, flag}) := (p == 5 && flag == 3) [u7] : {6, 2};
+next({p}) := (p == 6 && other_flag != 4) [u8] : {6};
+next({p}) := (p == 6 && other_flag == 4) [u9] : {7};
+next({p, flag}) := (p == 7 && (flag == 2 || flag == 3)) [u10] : {8, 4};
+next({p}) := (p == 8 && (other_flag == 0 || other_flag == 1)) [u11] : {9};
+next({p}) := (p == 8 && other_flag != 0 && other_flag != 1) [u12] : {8};
+next({p}) := (p == 9) [u13] : {10};
+next({p, flag}) := (p == 10 && flag == 4) [u14] : {1, 0};
+
+
+MODULE main
+
+VAR proc1 : process user1(proc2.flag);
+VAR proc2 : process user2(proc1.flag);
+
+SAFETYSPEC
+!(proc1.p == 9 && proc2.p == 9)
+
+

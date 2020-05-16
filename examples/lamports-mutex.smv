@@ -1,0 +1,47 @@
+MODULE user1(other)
+
+VAR p : integer;
+VAR bit : boolean;
+
+ASSIGN
+
+init(p) := 1;
+init(bit) := false;
+
+next({p, bit}) := (p == 1 && bit == false) [s1] : {2, true};
+next({p, other}) := (p == 2 && other == false) [s2] : {3, false};
+next({p, other}) := (p == 2 && other == true) [s3] : {2, true};
+next({p, bit}) := (p == 3 && bit == true) [s4] : {1, false};
+
+
+MODULE user2(other)
+
+VAR p : integer;
+VAR bit : boolean;
+
+ASSIGN
+
+init(p) := 1;
+init(bit) := false;
+
+next({p, bit}) := (p == 1 && bit == false) [t1] : {2, true};
+next({p, other}) := (p == 2 && other == true) [t2] : {3, true};
+next({p, bit}) := (p == 3 && bit == true) [t3] : {4, false};
+next({p, other}) := (p == 4 && other == false) [t4] : {1, false};
+next({p, other}) := (p == 4 && other == true) [t5] : {4, true};
+next({p, other}) := (p == 2 && other == false) [t6] : {5, false};
+next({p, bit}) := (p == 5 && bit == true) [t7] : {1, false};
+
+
+MODULE main
+
+VAR proc1 : process user1(proc2.bit);
+VAR proc2 : process user2(proc1.bit);
+
+
+SAFETYSPEC
+!(proc1.p == 3 && proc2.p == 5)
+
+
+
+

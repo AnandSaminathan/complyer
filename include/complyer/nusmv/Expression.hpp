@@ -169,7 +169,7 @@ class ConExpression {
 
       std::string formula = "";
       for(int i = 0; i < ids.size(); ++i) {
-        std::string clause = parenthesize(subExpressions[i]->toFormulaString(nextId(ids[i])));
+        std::string clause = subExpressions[i]->toFormulaString(nextId(ids[i]));
         if(i == 0) { formula =  clause; }
         else { formula = land(formula, clause); }
       }

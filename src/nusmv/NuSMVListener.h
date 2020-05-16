@@ -12,6 +12,19 @@
 class NuSMVListener : public NuSMVParserBaseListener {
   public:
 
+    void enterModule(NuSMVParser::ModuleContext *ctx) override {
+      module.setName((ctx->name)->getText());
+      if(ctx->parameters() != nullptr) {
+        auto idCtxs = (ctx->parameters())->formula();
+        std::vector<std::string> ids;
+        ids.reserve(idCtxs.size());
+        for(auto idCtx: idCtxs) {
+          ids.emplace_back(idCtx->getText());
+        }
+        module.setParameters(ids);
+      }
+    }
+
     void exitModule(NuSMVParser::ModuleContext *ctx) override { 
       module.setName((ctx->name)->getText());
       nusmv.addModule(module);
@@ -40,22 +53,29 @@ class NuSMVListener : public NuSMVParserBaseListener {
       nusmv.addSpecification(spec);
     }
 
-    void enterParameters(NuSMVParser::ParametersContext *ctx) override { 
-      auto idCtxs = ctx->id();
-      std::vector<std::string> ids;
-      ids.reserve(idCtxs.size());
-      for(auto idCtx: idCtxs) {
-        ids.emplace_back(idCtx->getText());
-      }
-      module.setParameters(ids);
-    }
-
     void enterDeclaration(NuSMVParser::DeclarationContext *ctx) override { 
       std::string name = (ctx->id())->getText();
       std::string typeStr = (ctx->type())->getText();
 
       type symbolType = (typeStr == "boolean") ? bool_const : int_const;
       module.addSymbol(Symbol(symbolType, name));
+    }
+
+    void enterModuleCall(NuSMVParser::ModuleCallContext *ctx) override {
+      std::string moduleName = (ctx->moduleName)->getText();
+      Module mod = nusmv.getModule(moduleName);
+      std::vector<std::string> actualParameters;
+      if(ctx->parameters() != nullptr) {
+        auto idCtxs = (ctx->parameters())->formula();
+        actualParameters.reserve(idCtxs.size());
+        for(auto idCtx: idCtxs) {
+          actualParameters.emplace_back(idCtx->getText());
+        }
+      }
+      bool async = false;
+      if(ctx->PROCESS() != nullptr) { async = true; }
+      mod.makeCall((ctx->name)->getText(), actualParameters, async);
+      module.addCall(std::make_shared<Module>(mod)); 
     }
 
     void exitAssignment(NuSMVParser::AssignmentContext *ctx) override { 
@@ -83,8 +103,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
 
     void exitConNextAssignment(NuSMVParser::ConNextAssignmentContext *ctx) override { 
       auto idCtxs = (ctx->set())->id();
-      auto symbols = module.getSymbols();
-      std::vector<std::string> symbolNames;
+      auto symbolNames = module.getLocalSymbolNames();
       std::vector<std::string> ids;
       std::vector<std::string> notPresent;
       ConNext conNext;
@@ -96,8 +115,6 @@ class NuSMVListener : public NuSMVParserBaseListener {
       }
       conNext.setIds(ids);
 
-      symbolNames.reserve(symbols.size());
-      for(auto symbol : symbols) { symbolNames.emplace_back(symbol.getName()); }
       sort(ids.begin(), ids.end());
       sort(symbolNames.begin(), symbolNames.end());
       std::set_difference(symbolNames.begin(), symbolNames.end(), 

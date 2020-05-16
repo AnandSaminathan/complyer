@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <NumericConstants.h>
+#include "complyer/util/FormulaStringUtil.hpp"
 
 CommandBase::CommandBase(const ModelSpecification& m) {
   verifier = new Verifiers(m);
@@ -107,10 +108,8 @@ bool CommandBase::CommandSafetyspec::parse(const std::string &line) {
 
 CommandResponse CommandBase::CommandSafetyspec::perform() {
   auto start = std::chrono::high_resolution_clock::now();
-  FormulaTree tree(this->property);
   auto label_mapper = this->model_specification.getLabelMapper();
-  tree.substitute(label_mapper);
-  this->property = tree.getFormula();
+  this->property = substitute(this->property, label_mapper);
   int result = this->verifier->k_induction_verifier->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
@@ -163,10 +162,8 @@ bool CommandBase::CommandLtlspec::parse(const std::string &line) {
 
 CommandResponse CommandBase::CommandLtlspec::perform() {
   auto start = std::chrono::high_resolution_clock::now();
-  FormulaTree tree(this->property);
   auto label_mapper = this->model_specification.getLabelMapper();
-  tree.substitute(label_mapper);
-  this->property = tree.getFormula();
+  this->property = substitute(this->property, label_mapper);
   int result = this->verifier->ltl_bmc_verifier->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
@@ -213,10 +210,8 @@ bool CommandBase::CommandIC3::parse(const std::string &line) {
 
 CommandResponse CommandBase::CommandIC3::perform() {
   auto start = std::chrono::high_resolution_clock::now();
-  FormulaTree tree(this->property);
   auto label_mapper = this->model_specification.getLabelMapper();
-  tree.substitute(label_mapper);
-  this->property = tree.getFormula();
+  this->property = substitute(this->property, label_mapper);
   int result = this->verifier->ic3_verifier->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
   auto stop = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);

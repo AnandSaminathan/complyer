@@ -1,0 +1,16 @@
+MODULE inverter(input)
+
+VAR output : boolean;
+
+ASSIGN
+
+init(output) := false;
+next(output) := {!input, output};
+
+MODULE main
+
+VAR gate1 : inverter(gate3.output);
+VAR gate2 : inverter(gate2.output);
+VAR gate3 : inverter(gate1.output);
+
+

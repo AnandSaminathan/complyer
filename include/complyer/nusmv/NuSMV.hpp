@@ -8,28 +8,24 @@ class NuSMV {
 
     NuSMV() { }
 
-    inline void addModule(Module module) { modules.emplace_back(module); }
+    inline void addModule(Module module) { modules.addSymbol(module.getName(), module); }
     inline void addSpecification(Specification spec) { specifications.emplace_back(spec); }
 
-    inline std::vector<Module> getModules() { return modules; }
+    inline Module getModule(std::string module) { return modules.getSymbol(module);  }
+    inline std::vector<Module> getModules() { return modules.getSymbols(); }
     inline std::vector<Specification> getSpecifications() { return specifications; }
 
     inline Kripke toFormula() { 
-      assert(modules.size() == 1);
-      return modules[0].toFormula();
+      return (modules.getSymbol("main")).toFormula();
     }
 
     inline std::vector<Symbol> getSymbols() {
-      std::vector<Symbol> symbols;
-      for(auto module : modules) {
-        auto cur = module.getSymbols();
-        symbols.insert(symbols.end(), cur.begin(), cur.end());
-      }
-      return symbols;
+      return (modules.getSymbol("main")).getSymbols();
     }
 
     std::map<std::string, std::string> getMapping() {
-      for(auto module : modules) {
+      auto mods = modules.getSymbols();
+      for(auto module : mods) {
         auto moduleMap = module.getMapping();
         substitutionMap.insert(moduleMap.begin(), moduleMap.end());
       }
@@ -39,7 +35,7 @@ class NuSMV {
 
   private:
 
-    std::vector<Module> modules;
+    SymbolTable<Module> modules; 
     std::vector<Specification> specifications;
     std::map<std::string, std::string> substitutionMap;
 
