@@ -26,5 +26,5 @@ RUN mkdir build \
 ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/usr/src/complyer/build"
 ENTRYPOINT ["/usr/src/complyer/build/complyer"]
 
-# docker run --rm -v `pwd`:/in image /in/file.smv - passing file.smv (present in current directory) as input to complyer 
+# docker run -it --rm -v `pwd`:/in image /in/file.smv [options] - passing file.smv (present in current directory) as input to complyer 
 
