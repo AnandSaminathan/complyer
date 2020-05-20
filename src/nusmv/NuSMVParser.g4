@@ -15,6 +15,7 @@ module             : MODULE WS name=id WS? parameters? WS? newline ( declaration
                                                                    | init
                                                                    | trans
                                                                    | define
+                                                                   | fairness
                                                                    | newline
                                                                    | WS
                                                                    )+;
@@ -34,7 +35,8 @@ assignment         : ASSIGN WS? newline ( initAssignment
 
 init               : INIT WS? newline WS? formula;
 trans              : TRANS WS? newline WS? formula;
-define             : DEFINE WS? newline (definition | newline)+;
+define             : DEFINE WS? newline WS? (definition | newline)+;
+fairness           : FAIRNESS WS? newline WS? fairnessConstraint;
 
 bound              : WS? BOUND WS? val=wholeNumber WS? SC;
 
@@ -61,7 +63,8 @@ seqSetSubExpr      : seqExpression;
 
 conExpression      : formula WS? label WS? COLON WS? seqSetExpr;
 
-definition         : WS? id WS? assign WS? seqExpression WS? SC WS?;
+definition         : id WS? assign WS? seqExpression WS? SC WS?;
+fairnessConstraint : (RUNNING | formula) WS?;
 
 label              : OPEN_S WS? id WS? CLOSE_S;
 type               : BOOLEAN | INTEGER;

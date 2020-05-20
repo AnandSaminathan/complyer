@@ -1,5 +1,7 @@
 lexer grammar NuSMVLexer;
 
+FAIRNESS    : 'FAIRNESS';
+RUNNING     : 'running';
 COMMENT     : '--' ~('\n')* -> skip;
 BOUND       : 'BOUND';
 LTLSPEC     : 'LTLSPEC';
