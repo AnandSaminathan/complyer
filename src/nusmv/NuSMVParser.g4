@@ -61,7 +61,7 @@ seqSetSubExpr      : seqExpression;
 
 conExpression      : formula WS? label WS? COLON WS? seqSetExpr;
 
-definition         : WS? id WS? assign WS? formula WS? SC WS?;
+definition         : WS? id WS? assign WS? seqExpression WS? SC WS?;
 
 label              : OPEN_S WS? id WS? CLOSE_S;
 type               : BOOLEAN | INTEGER;

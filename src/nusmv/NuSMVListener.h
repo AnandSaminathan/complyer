@@ -162,7 +162,7 @@ class NuSMVListener : public NuSMVParserBaseListener {
     }
 
     void exitDefinition(NuSMVParser::DefinitionContext *ctx) override {
-      Definition definition((ctx->id())->getText(), (ctx->formula())->getText());
+      Definition definition((ctx->id())->getText(), seqExpression);
       module.addDefinition(definition);
     }
 
