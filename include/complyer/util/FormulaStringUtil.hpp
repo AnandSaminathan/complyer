@@ -28,7 +28,7 @@ inline std::string exactlyOneTrue(std::vector<std::string> clauses) {
     if(i == 0) { form = clause; }
     else { form = lor(form, clause); }
   }
-  return form;
+  return parenthesize(form);
 }
 
 inline std::string exactlyOneTruePb(std::vector<std::string> clauses) {
