@@ -5,6 +5,10 @@
 #include "formula-tree/formula-tree.h"
 
 inline std::string nextId(std::string id) { return "next_" + id; }
+inline std::string asub(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " - " + op2)); }
+inline std::string aadd(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " + " + op2)); }
+inline std::string amul(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " * " + op2)); }
+inline std::string adiv(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " / " + op2)); }
 inline std::string land(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " && " + op2)); }
 inline std::string lor(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " || " + op2));  }
 inline std::string limplies(std::string op1, std::string op2) { return (op1 == "") ? op2 : ((op2 == "") ? op1 : (op1 + " -> " + op2));  }

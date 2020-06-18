@@ -2,6 +2,7 @@
 
 #include "Functions.hpp"
 #include "complyer/util/Kripke.hpp"
+#include "complyer/util/PetriNet.hpp"
 
 class Assignment {
   public:
@@ -15,6 +16,37 @@ class Assignment {
     inline std::vector<Init> getInits() { return inits; }
     inline std::vector<SeqNext> getSeqNexts() { return seqNexts; }
     inline std::vector<ConNext> getConNexts() { return conNexts; }
+
+    PetriNet toPetriNet(std::vector<std::string> symbols) {
+      assert(conNexts.size() && !seqNexts.size());
+
+      int places = symbols.size();
+      int transitions = conNexts.size();
+
+      std::sort(symbols.begin(), symbols.end());
+      std::map<std::string, int> symbolPos;
+      for(int i = 0; i < symbols.size(); ++i) { symbolPos[symbols[i]] = i; } 
+
+
+      std::vector<std::string> initial_marking(places, "0");
+      std::vector<std::vector<std::string>> incidence_matrix(places, std::vector<std::string>(transitions, "0"));
+
+      for(auto init: inits) {
+        int idx = symbolPos[init.getId()];
+        initial_marking[idx] = (init.getDefinition())->toFormulaString("");
+      }
+
+      for(int i = 0; i < transitions; ++i) {
+        std::vector<std::string> column = conNexts[i].toColumn(); 
+        std::vector<std::string> ids = conNexts[i].getIds();  
+        for(int j = 0; j < ids.size(); ++j) {
+          int idx = symbolPos[ids[j]];
+          incidence_matrix[i][idx] = column[i];
+        }
+      }
+
+      return PetriNet(initial_marking, incidence_matrix);
+    }
 
     Kripke toFormula() {
       assert(!(seqNexts.size() && conNexts.size()));
@@ -59,3 +91,4 @@ class Assignment {
     std::vector<SeqNext> seqNexts;
     std::vector<ConNext> conNexts;
 };
+

@@ -163,6 +163,16 @@ class ConExpression {
     inline std::string getLabel() { return label; }
     inline SeqSetExpr getConsequent() { return consequent; }
 
+    std::vector<std::string> toColumn(std::vector<std::string> ids) {
+      std::vector<std::string> column;
+      auto subExpressions = consequent.getSubExpressions();
+
+      for(int i = 0; i < ids.size(); ++i) {
+        column.emplace_back(asub(subExpressions[i]->toFormulaString(""), ids[i]));
+      }
+      return column;
+    }
+
     std::string toFormulaString(std::vector<std::string> ids) {
       auto subExpressions = consequent.getSubExpressions();
       assert(subExpressions.size() == ids.size());

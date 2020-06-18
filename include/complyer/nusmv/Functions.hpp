@@ -66,6 +66,8 @@ class ConNext {
     inline std::vector<std::string> getNotPresent() { return notPresent; }
     inline ConExpression getDefinition() { return definition; } 
 
+    inline std::vector<std::string> toColumn() { return definition.toColumn(ids);  }
+
     std::string toFormulaString() {
       if((this->formula) != "") { return formula; }
 

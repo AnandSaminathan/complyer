@@ -23,6 +23,7 @@ class SymbolTable {
     }
 
     inline std::vector<symbolType> getSymbols() { return symbols;  }
+    inline int getSymbolCount() { return symbols.size(); }
 
   private:
     

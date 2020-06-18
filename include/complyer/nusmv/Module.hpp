@@ -87,6 +87,9 @@ class Module {
       for(auto symbol: cur) {
         symbols.push_back(Symbol(symbol.getType(), prefix + symbol.getName()));
       }
+      std::sort(symbols.begin(), symbols.end(), [](Symbol a, Symbol b) {
+        return a.getName() < b.getName();  
+      });
       return symbols; 
     }
 
@@ -168,6 +171,11 @@ class Module {
         substitutionMap[definition.getId()] = definition.getDefinition();
       }
       return substitutionMap;
+    }
+
+    PetriNet toPetriNet() {
+      assert(assignment);
+      return (assignment->toPetriNet(getSymbolNames(getSymbols())));
     }
 
   private:

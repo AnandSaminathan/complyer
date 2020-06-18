@@ -19,6 +19,11 @@ class NuSMV {
       return (modules.getSymbol("main")).toFormula();
     }
 
+    inline PetriNet toPetriNet() {
+      assert(modules.getSymbolCount() == 1);
+      return (modules.getSymbol("main")).toPetriNet();
+    }
+
     inline std::vector<Symbol> getSymbols() {
       return (modules.getSymbol("main")).getSymbols();
     }
