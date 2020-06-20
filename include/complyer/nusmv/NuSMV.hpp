@@ -19,6 +19,10 @@ class NuSMV {
       return (modules.getSymbol("main")).toFormula();
     }
 
+    inline bool isPetriNet() {
+      return (modules.getSymbolCount() == 1) && (modules.getSymbol("main").isConcurrent());
+    }
+
     inline PetriNet toPetriNet() {
       assert(modules.getSymbolCount() == 1);
       return (modules.getSymbol("main")).toPetriNet();

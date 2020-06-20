@@ -11,4 +11,5 @@ namespace StringConstants {
   const std::string LENGTH = "LENGTH";
   const std::string LTLSPEC = "LTLSPEC";
   const std::string SAFETYSPEC = "SAFETYSPEC";
+  const std::string PNET = "PNET";
 }

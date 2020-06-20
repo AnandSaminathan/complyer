@@ -9,6 +9,8 @@ class Assignment {
 
     Assignment() { }
 
+    inline bool isConcurrent() { return conNexts.size(); }
+
     inline void addInit(Init init) { inits.emplace_back(init); }
     inline void addSeqNext(SeqNext seqNext) { seqNexts.emplace_back(seqNext); }
     inline void addConNext(ConNext conNext) { conNexts.emplace_back(conNext); }
@@ -41,7 +43,7 @@ class Assignment {
         std::vector<std::string> ids = conNexts[i].getIds();  
         for(int j = 0; j < ids.size(); ++j) {
           int idx = symbolPos[ids[j]];
-          incidence_matrix[i][idx] = column[i];
+          incidence_matrix[idx][i] = column[j];
         }
       }
 

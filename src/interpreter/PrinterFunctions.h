@@ -8,7 +8,7 @@
 namespace PrinterFunctions {
   void interactive(CommandResponse command_response, CommandBase command_base) {
     if(command_response.getOperation() == StringConstants::QUIT or command_response.getOperation() == StringConstants::BOUND) {}
-    else if(command_response.getOperation() == StringConstants::SAFETYSPEC or command_response.getOperation() == StringConstants::LTLSPEC or command_response.getOperation() == StringConstants::IC3) {
+    else if(command_response.getOperation() == StringConstants::PNET or command_response.getOperation() == StringConstants::SAFETYSPEC or command_response.getOperation() == StringConstants::LTLSPEC or command_response.getOperation() == StringConstants::IC3) {
       if(command_response.getResult() == NumericConstants::SAT) {
         std::cout << "The models satisfies the given property\nTime taken: " << command_response.getTimeTaken()/1e6 << std::endl;
         CommandResponse model_length = command_base.perform(StringConstants::LENGTH);

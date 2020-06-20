@@ -23,7 +23,11 @@ class Main {
         printVariables(nusmv);
         printKripke(k);
       }
-      CommandBase commandBase(ModelSpecification(nusmv.getSymbols(), k, nusmv.getMapping()));
+      ModelSpecification spec(nusmv.getSymbols(), k, nusmv.getMapping());
+      spec.setConcurrent(nusmv.isPetriNet());
+      if(nusmv.isPetriNet()) { spec.setPetriNet(nusmv.toPetriNet()); }
+      else { spec.setPetriNet(PetriNet()); }
+      CommandBase commandBase(spec);
       Interpreter interpreter(commandBase);
       if(inputOptions->isBatch()) interpreter.setPrinter(PrinterFunctions::batch);
       else interpreter.setPrinter(PrinterFunctions::interactive);

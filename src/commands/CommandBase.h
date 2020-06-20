@@ -7,6 +7,7 @@
 #include <verification-algorithms/ltl-bmc/ltl-bmc.hpp>
 #include <verification-algorithms/k-induction/k-induction.hpp>
 #include <verification-algorithms/ic3/ic3.hpp>
+#include <verification-algorithms/pnet-coverability/pnet-coverability.hpp>
 
 #include "ModelSpecification.h"
 #include "CommandResponse.h"
@@ -18,6 +19,7 @@ class CommandBase {
   private:
     class CommandInterface;
 
+    class CommandPnet;
     class CommandIC3;
     class CommandQuit;
     class CommandHelp;
@@ -133,13 +135,25 @@ class CommandBase::CommandHelp : public CommandInterface {
     std::string cmd_help{};
 };
 
+class CommandBase::CommandPnet : public CommandInterface {
+  public:
+    CommandPnet(Commands *cmds, Verifiers *vrfs, ModelSpecification ms) : CommandInterface(StringConstants::PNET, cmds, vrfs, std::move(ms)) {};
+    bool parse(const std::string &) override;
+    CommandResponse perform() override;
+    void prePerform() override;
+    std::string help() override;
+  private:
+    std::string property;
+};
+
 struct CommandBase::Verifiers {
   ltlBmc *ltl_bmc_verifier;
   kInduction *k_induction_verifier;
   IC3 *ic3_verifier;
+  PnetCoverability *pnet_coverability;
 
   // VRFR_LIST_SIZE must always be the last element
-  enum verifier_list{LTL_BMC, K_INDUCTION, IC_3, VRFR_LIST_SIZE};
+  enum verifier_list{LTL_BMC, K_INDUCTION, IC_3, P_NET, VRFR_LIST_SIZE};
   Verifier *verifiers[VRFR_LIST_SIZE]{};
 
   explicit Verifiers(ModelSpecification ms);
@@ -154,10 +168,12 @@ struct CommandBase::Commands {
   CommandLtlspec *ltlspec;
   CommandIC3 *ic3;
   CommandHelp *help;
+  CommandPnet *pnet;
 
   // CMD_LIST_SIZE must always be the last element
-  enum command_list{QUIT, TRACE, LENGTH, SAFETYSPEC, BOUND, LTLSPEC, IC_3, HELP, CMD_LIST_SIZE};
+  enum command_list{QUIT, TRACE, LENGTH, SAFETYSPEC, BOUND, LTLSPEC, IC_3, HELP, P_NET, CMD_LIST_SIZE};
   CommandInterface *commands[CMD_LIST_SIZE]{};
 
   Commands(Verifiers *verifiers, const ModelSpecification& ms);
 };
+

@@ -12,6 +12,8 @@ class Module {
 
     Module() { }
 
+    inline bool isConcurrent() { return (assignment) && assignment->isConcurrent(); }
+
     inline void setName(std::string name) { (this->name) = name; }
 
     inline void setParameters(std::vector<std::string> parameters) { 

@@ -192,12 +192,15 @@ CommandBase::Commands::Commands(Verifiers *verifiers, const ModelSpecification& 
   commands[LENGTH] = length = new CommandLength(this, verifiers, ms);
   commands[LTLSPEC] = ltlspec = new CommandLtlspec(this, verifiers, ms);
   commands[SAFETYSPEC] = safetyspec = new CommandSafetyspec(this, verifiers, ms);
+  commands[P_NET] = pnet = new CommandPnet(this, verifiers, ms); 
 }
 
 CommandBase::Verifiers::Verifiers(ModelSpecification ms) {
   verifiers[LTL_BMC] = ltl_bmc_verifier = new ltlBmc(ms.getSymbols(), ms.getKripke().getI(), ms.getKripke().getT());
   verifiers[K_INDUCTION] = k_induction_verifier = new kInduction(ms.getSymbols(), ms.getKripke().getI(), ms.getKripke().getT());
   verifiers[IC_3] = ic3_verifier = new IC3(ms.getSymbols(), ms.getKripke().getI(), ms.getKripke().getT());
+  if(ms.isConcurrent()) { verifiers[P_NET] = pnet_coverability = new PnetCoverability(ms.getSymbols(), ms.getPetriNet().getInitialMarking(), ms.getPetriNet().getIncidenceMatrix()); }
+  else { verifiers[P_NET] = pnet_coverability = nullptr; }
 }
 
 bool CommandBase::CommandIC3::parse(const std::string &line) {
@@ -228,6 +231,37 @@ std::string CommandBase::CommandIC3::help() {
   std::string help_string;
   help_string = "usage: ic3 <SAFETYPROPERTY>\n";
   help_string += "Verifies the given safety property against the system using ic3.\n";
+  return help_string;
+}
+
+bool CommandBase::CommandPnet::parse(const std::string &line) {
+  if(!CommandInterface::parse(line)) return false;
+  std::stringstream stream(line);
+  std::string cmd; stream >> cmd;
+  std::getline(stream, this->property);
+  return true;
+}
+
+CommandResponse CommandBase::CommandPnet::perform() {
+  auto start = std::chrono::high_resolution_clock::now();
+  auto label_mapper = this->model_specification.getLabelMapper();
+  this->property = substitute(this->property, label_mapper);
+  int result = this->verifier->pnet_coverability->check(property)?NumericConstants::SAT : NumericConstants::UNSAT;
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  std::string result_string = result == NumericConstants::SAT ? "SAT" : "UNSAT";
+  return CommandResponse(getOperation(), result, result_string, duration.count());
+}
+
+void CommandBase::CommandPnet::prePerform() {
+  command->trace->setVerifier(verifier->pnet_coverability);
+  command->length->setVerifier(verifier->pnet_coverability);
+}
+
+std::string CommandBase::CommandPnet::help() {
+  std::string help_string;
+  help_string = "usage: pnet <SAFETYPROPERTY>\n";
+  help_string += "Verifies the given safety property against the petri-net using pnet-coverability.\n";
   return help_string;
 }
 
