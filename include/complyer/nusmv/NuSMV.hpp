@@ -33,12 +33,7 @@ class NuSMV {
     }
 
     std::map<std::string, std::string> getMapping() {
-      auto mods = modules.getSymbols();
-      for(auto module : mods) {
-        auto moduleMap = module.getMapping();
-        substitutionMap.insert(moduleMap.begin(), moduleMap.end());
-      }
-      return substitutionMap;
+      return (modules.getSymbol("main")).getMapping();
     }
 
 

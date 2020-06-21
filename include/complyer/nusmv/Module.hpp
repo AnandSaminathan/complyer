@@ -167,11 +167,21 @@ class Module {
     }
 
     std::map<std::string, std::string> getMapping() {
-      if(assignment) { substitutionMap = assignment->getMapping(); }
+      std::map<std::string, std::string> substitutionMap;
+      for(auto call : calls) {
+        auto callMap = call->getMapping();
+        substitutionMap.insert(callMap.begin(), callMap.end()); 
+      }
+      std::map<std::string, std::string> curMap;
+      if(assignment) { curMap = assignment->getMapping(); }
       else { substitutionMap = std::map<std::string, std::string>(); }
       for(auto definition : definitions) {
-        substitutionMap[definition.getId()] = definition.getDefinition();
+        curMap[definition.getId()] = definition.getDefinition();
       }
+      if(name != "main") { 
+        std::string prefix = name + "."; 
+        for(auto m : curMap) { substitutionMap[prefix + m.first] = m.second; }
+      } else { substitutionMap.insert(curMap.begin(), curMap.end()); }
       return substitutionMap;
     }
 
