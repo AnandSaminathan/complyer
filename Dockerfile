@@ -9,14 +9,14 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # readline setup
-#RUN wget ftp://ftp.gnu.org/gnu/readline/readline-8.0.tar.gz \
-#    && tar -xvf readline-8.0.tar.gz \
-#    && cd readline-8.0 \
-#    && ./configure \
-#    && make \
-#    && make install \
-#    && make clean
-#
+RUN wget ftp://ftp.gnu.org/gnu/readline/readline-8.0.tar.gz \
+    && tar -xvf readline-8.0.tar.gz \
+    && cd readline-8.0 \
+    && ./configure \
+    && make \
+    && make install \
+    && make clean
+
 
 WORKDIR /usr/src/complyer
 COPY . .
@@ -27,6 +27,7 @@ RUN mkdir build \
 
 FROM ubuntu:18.04
 
+COPY --from=builder /usr/local/lib/libreadline.* /usr/local/bin/
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libgomp.so* /usr/local/bin/
 COPY --from=builder /usr/src/complyer/build/*.so* /usr/local/bin/
 COPY --from=builder /usr/src/complyer/build/complyer /usr/local/bin/
