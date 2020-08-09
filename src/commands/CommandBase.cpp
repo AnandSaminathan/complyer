@@ -51,7 +51,9 @@ std::string CommandBase::CommandQuit::help() {
 }
 
 CommandResponse CommandBase::CommandTrace::perform() {
-  assert(common_verifier != nullptr);
+  if(common_verifier == nullptr) {
+    throw std::logic_error("verifier cannot be null for trace");
+  }
   try {
     auto start = std::chrono::high_resolution_clock::now();
     std::stringstream stream;
@@ -83,7 +85,9 @@ std::string CommandBase::CommandTrace::help() {
 }
 
 CommandResponse CommandBase::CommandLength::perform() {
-  assert(common_verifier != nullptr);
+  if(common_verifier == nullptr) {
+    throw std::logic_error("verifier cannot be null for length");
+  } 
   auto start = std::chrono::high_resolution_clock::now();
   int result = common_verifier->getLength();
   auto stop = std::chrono::high_resolution_clock::now();

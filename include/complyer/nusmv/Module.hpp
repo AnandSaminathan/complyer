@@ -23,7 +23,9 @@ class Module {
     inline void makeCall(std::string callerName, std::vector<std::string> actualParameters, bool async = false) {
       (this->name) = callerName;
       (this->async) = async;
-      assert((*parameters).size() == actualParameters.size());
+      if((*parameters).size() != actualParameters.size()) {
+        throw std::invalid_argument("expected " + std::to_string((*parameters).size()) + " parameters but found " + std::to_string(actualParameters.size()) + " parameters");
+      }
       (this->actualParameters).emplace(actualParameters);
     }
 
@@ -44,7 +46,9 @@ class Module {
     }
 
     inline void addCall(std::shared_ptr<Module> call) {
-      assert((*call).getName() != name);
+      if((*call).getName() == name) {
+        throw std::logic_error("recursive module calls are not allowed");
+      }
       calls.emplace_back(call);
     }
 
@@ -101,7 +105,9 @@ class Module {
 
       std::vector<std::string> asyncT, asyncConstT;
 
-      assert(!(assignment && init) && !(assignment && trans));
+      if((assignment && init) || (assignment && trans)) {
+        throw std::logic_error("ambiguous model - multiple formats for definition");
+      }
 
       std::map<std::string, std::string> mapper;
 
@@ -116,7 +122,7 @@ class Module {
       }
 
       if(parameters) {
-        assert(actualParameters);
+        if(!actualParameters) { throw std::invalid_argument("missing parameters for module call"); }
         for(int i = 0; i < (*parameters).size(); ++i) { 
           mapper[(*parameters)[i]] = (*actualParameters)[i]; 
           mapper[nextId((*parameters)[i])] = nextId((*actualParameters)[i]);
@@ -186,7 +192,9 @@ class Module {
     }
 
     PetriNet toPetriNet() {
-      assert(assignment);
+      if(!assignment) {
+        throw std::logic_error("cannot build matrix representation without function based definitions");
+      }
       return (assignment->toPetriNet(getSymbolNames(getSymbols())));
     }
 

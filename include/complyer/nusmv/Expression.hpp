@@ -175,7 +175,9 @@ class ConExpression {
 
     std::string toFormulaString(std::vector<std::string> ids) {
       auto subExpressions = consequent.getSubExpressions();
-      assert(subExpressions.size() == ids.size());
+      if(subExpressions.size() != ids.size()) {
+        throw std::logic_error("concurrent expression - size of lhs and rhs cannot be different");
+      }
 
       std::string formula = "";
       for(int i = 0; i < ids.size(); ++i) {

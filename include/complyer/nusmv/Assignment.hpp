@@ -20,7 +20,9 @@ class Assignment {
     inline std::vector<ConNext> getConNexts() { return conNexts; }
 
     PetriNet toPetriNet(std::vector<std::string> symbols) {
-      assert(conNexts.size() && !seqNexts.size());
+      if(!(conNexts.size() && !seqNexts.size())) {
+        throw std::logic_error("given model is not a petri net");
+      }
 
       int places = symbols.size();
       int transitions = conNexts.size();
@@ -51,7 +53,9 @@ class Assignment {
     }
 
     Kripke toFormula() {
-      assert(!(seqNexts.size() && conNexts.size()));
+      if(seqNexts.size() && conNexts.size()) {
+        throw std::logic_error("system cannot be sequential and concurrent at the same time");
+      }
 
       std::string I = "";
       for(auto init : inits) {

@@ -24,7 +24,9 @@ class NuSMV {
     }
 
     inline PetriNet toPetriNet() {
-      assert(modules.getSymbolCount() == 1);
+      if(modules.getSymbolCount() != 1) {
+        throw std::logic_error("matrix representation can be built only for single module models");
+      }
       return (modules.getSymbol("main")).toPetriNet();
     }
 

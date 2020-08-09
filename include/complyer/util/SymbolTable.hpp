@@ -11,14 +11,18 @@ class SymbolTable {
     SymbolTable() {  };
 
     inline void addSymbol(std::string name, symbolType symbol) { 
-      assert(nameToIdx.find(name) == nameToIdx.end());
+      if(nameToIdx.find(name) != nameToIdx.end()) {
+        throw std::invalid_argument("redeclaration of symbol: " + name);
+      }
       symbols.push_back(symbol);
       nameToIdx[name] = symbols.size() - 1;
     }
 
     inline symbolType getSymbol(std::string name) {
       auto itr = nameToIdx.find(name);
-      assert(itr != nameToIdx.end());
+      if(itr == nameToIdx.end()) {
+        throw std::invalid_argument("symbol " + name + " not found");
+      }
       return symbols[itr->second];
     }
 

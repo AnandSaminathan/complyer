@@ -5,9 +5,10 @@
 #include <map>
 
 #include <verification-algorithms/common/symbol.hpp>
-
 #include <complyer/util/Kripke.hpp>
 #include "complyer/util/PetriNet.hpp"
+
+using namespace verifier;
 
 class ModelSpecification {
   public:

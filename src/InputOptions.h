@@ -1,7 +1,6 @@
 #pragma once
 
 #include <fstream>
-#include <cassert>
 
 class InputOptions {
 public:
@@ -58,12 +57,16 @@ public:
   }
 
   std::string getBatchCommandFile() const {
-    assert(batch);
+    if(!batch) {
+      throw std::invalid_argument("batch option not specified");
+    }
     return batch_command_file;
   }
 
   const std::ifstream &getInputProgramStream() const {
-    assert(input_program_set);
+    if(!input_program_set) {
+      throw std::invalid_argument("input program not set");
+    }
     return input_program_stream;
   }
 
