@@ -26,11 +26,13 @@ set(ANTLR_EXECUTABLE ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.7.2-complete
 
 include(ExternalAntlr4Cpp)
 include(FindReadline)
+include(ExternalFormulaTree)
+include(ExternalZ3)
+include(ExternalVerificationAlgorithms)
 
 include_directories(${ANTLR4_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/src/)
-include_directories(${PROJECT_SOURCE_DIR}/include/z3)
 
 find_package(ANTLR REQUIRED)
 
@@ -57,9 +59,9 @@ add_library(command_base SHARED ${PROJECT_SOURCE_DIR}/src/commands/CommandBase.h
         ${PROJECT_SOURCE_DIR}/src/commands/CommandResponse.h
         ${PROJECT_SOURCE_DIR}/src/commands/ModelSpecification.h)
 
-target_link_libraries(command_base ${PROJECT_SOURCE_DIR}/libs/libz3.so)
-target_link_libraries(command_base ${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so)
-target_link_libraries(command_base ${PROJECT_SOURCE_DIR}/libs/libformula-tree.so)
+target_link_libraries(command_base z3_main)
+target_link_libraries(command_base verification-algorithms)
+target_link_libraries(command_base formula-tree)
 
 add_executable(complyer ${PROJECT_SOURCE_DIR}/src/driver.cpp
                     ${ANTLR_GrammarLexer_CXX_OUTPUTS}
@@ -82,29 +84,3 @@ if(NOT COMPLYER_DISABLE_READLINE)
     endif(WITH_TEST)
   endif()
 endif()
-
-add_custom_command(TARGET complyer POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-  "${PROJECT_SOURCE_DIR}/libs/libantlr4-runtime.so.4.8"
-  $<TARGET_FILE_DIR:complyer>)
-
-add_custom_command(TARGET complyer POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-  "${PROJECT_SOURCE_DIR}/libs/libantlr4-runtime.so"
-  $<TARGET_FILE_DIR:complyer>)
-
-add_custom_command(TARGET complyer POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-  "${PROJECT_SOURCE_DIR}/libs/libformula-tree.so"
-  $<TARGET_FILE_DIR:complyer>)
-
-add_custom_command(TARGET complyer POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-  "${PROJECT_SOURCE_DIR}/libs/libz3.so"
-  $<TARGET_FILE_DIR:complyer>)
-
-add_custom_command(TARGET complyer POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-  "${PROJECT_SOURCE_DIR}/libs/libverification-algorithms.so"
-  $<TARGET_FILE_DIR:complyer>)
-

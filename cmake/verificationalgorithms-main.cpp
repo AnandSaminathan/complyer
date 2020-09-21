@@ -1,0 +1,1 @@
+#include "verification-algorithms/common/symbol.hpp"

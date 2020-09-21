@@ -31,6 +31,9 @@ COPY --from=builder /usr/local/lib/libreadline.* /usr/local/bin/
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libgomp.so* /usr/local/bin/
 COPY --from=builder /usr/src/complyer/build/*.so* /usr/local/bin/
 COPY --from=builder /usr/src/complyer/build/complyer /usr/local/bin/
+COPY --from=builder /usr/src/complyer/build/formulatree/src/git_formulatree/bin/*.so* /usr/local/bin/
+COPY --from=builder /usr/src/complyer/build/verificationalgorithms/src/git_verificationalgorithms/bin/*.so* /usr/local/bin/
+COPY --from=builder /usr/src/complyer/build/z3/src/git_z3/bin/*.so* /usr/local/bin/
 
 ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/usr/local/bin"
 ENTRYPOINT ["/usr/local/bin/complyer"]
