@@ -9,14 +9,6 @@ A symbolic model checker for verifying safety and temporal specifications.
 - [Formula Tree](https://github.com/AnandSaminathan/formula-tree)
 - [Z3](https://github.com/Z3Prover/z3)
 
-## Docker usage
-
-To verify a model and specification present in `file.smv`:
-
-```
-docker run -it --rm -v `pwd`/file.smv:/f anandsaminathan/complyer f [options]
-```
-
 ## Build Instructions
 
 ```
@@ -44,6 +36,19 @@ After building, the tool can be run using:
 - ```-b, --batch```        : Batch process commands
 
 **Note:** Interactive and Batch cannot be enabled simultaneously
+
+## Docker usage
+
+```
+docker run -it --rm -v `pwd`/<FILE NAME>:/f anandsaminathan/complyer f [Options]
+```
+
+### Example
+To verify a model and specification present in `file.smv` in interactive mode:
+
+```
+docker run -it --rm -v `pwd`/file.smv:/f anandsaminathan/complyer f --interactive
+```
 
 ## Examples
 
